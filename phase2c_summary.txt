@@ -5,18 +5,18 @@ locked_out (master_weight < med AND master_weight < high): 107443 (97.1%)
 not locked out: 3207
 added key still present: 110622 (removed: 28)
 threshold patterns (low/med/high), top first:
-  2/2/2: 87630
-  1/2/2: 17455
-  0/0/0: 2482
-  0/2/2: 1044
-  2/2/3: 865
-  1/0/1: 679
-  255/255/255: 238
-  10/10/10: 209
-  2/0/2: 41
-  2/0/1: 3
-  3/3/3: 3
-  1/1/1: 1
+  2/2/2: 87630 (locked_out: 87629)
+  1/2/2: 17455 (locked_out: 17455)
+  0/0/0: 2482 (locked_out: 0)
+  0/2/2: 1044 (locked_out: 1044)
+  2/2/3: 865 (locked_out: 865)
+  1/0/1: 679 (locked_out: 0)
+  255/255/255: 238 (locked_out: 238)
+  10/10/10: 209 (locked_out: 209)
+  2/0/2: 41 (locked_out: 0)
+  2/0/1: 3 (locked_out: 0)
+  3/3/3: 3 (locked_out: 3)
+  1/1/1: 1 (locked_out: 0)
 master weight distribution:
   weight 0: 1117
   weight 1: 109529
