@@ -1,0 +1,55 @@
+# Reused added-signer keys vs finalized enclosed-period confirmed list
+
+Date: 2026-11-05 (checked ~18:50 JST). This is the cross-check Akira deferred
+on 2026-11-05 until the No.2 enclosed suspect list was finalized. The list
+finalized 2026-11-05 18:38 JST (enclosed/enclosed_suspects.txt, 1,980 lines).
+
+## Method
+- Key set: signer_created/repeat_signer_keys.csv — 2,832 added keys reused on
+  >=2 accounts (census-side count, includes 2nd+ additions; the first-addition
+  count reported earlier was 2,825 — near-identical, see memory/2026-11-05.md).
+- Compared by exact full-address match against:
+  (a) enclosed/enclosed_suspects.txt (1,980 confirmed addresses),
+  (b) findsp2.l_spam.txt (8,132 No.1 addresses),
+  (c) enclosed/stage2/tentative_spam.txt (107,705 provisional addresses).
+- Validation: the provisional check reproduces exactly (88 keys), and the
+  No.1 check reproduces exactly (3 keys) — same file, same method as 2026-11-05.
+
+## Result: 6 reused added keys are in the finalized enclosed confirmed list
+| Added key (full) | Accounts it was added to | Also in No.1 list? |
+|---|---|---|
+| GDXZUYU7KF5QATLXEBIRZJ4NWKNYP3OFRNQVL2AUSQ2EUDD2XJA54JTQ | 4,784 (4,756 as first addition) | No |
+| GBLY27C6YKMLKDYOY7UUXP5FKGTI4GTFPOSNBQOMOAZOYK5CSWYIAWAG | 109 | No |
+| GBX2JNJQ665HIX3Q6CN3MQK5ZJ6UEEQW7YIX67SU2H3K6DHOXA3BD3SI | 42 | Yes |
+| GC6ASONBS7MW6TWBOYMAEYHKOHLOAFJ5UTOD4QLU3QK425PZE75BCINC | 26 | No |
+| GA4XXJN5ANBQXCGX2VFCT3WVDL45POR54NZ7KDUVF6G4PJQMXBRVJHOD | 25 | No |
+| GBM6MMGT4YHXEARDRE35IP3OHRKA5AIAEUHCP34V54UZBLCLTXMW2SAK | 2 | No |
+
+Total accounts carrying one of these 6 keys (census-side counts): 4,988.
+Provisional -> final: 88 keys overlapped the tentative set; only 6 survive
+in the confirmed 1,980 list.
+
+## Headline
+- GDXZUYU7… is the convergence point: added signer on ~4,756 accounts,
+  top first-drain destination after release in Phase 2d (2,061 accounts) and
+  after addition in Phase 2b (2,069 accounts), and now a confirmed
+  enclosed-period drain suspect itself. It is NOT in the No.1 (2023-period)
+  list — this link only appears with the enclosed-period list.
+- GBLY27C6… (109 accounts) is the key from the example victim account
+  examined earlier, also confirmed in the enclosed list.
+- GBX2JNJQ… (42 accounts) is the only key in all three sets: No.1 list,
+  enclosed confirmed list, and reused added keys.
+
+## Side finding
+- 544 of the 1,980 enclosed confirmed addresses (27.5%) are also in the
+  No.1 8,132 list — the two lists, built from different periods with the
+  same method, share over a quarter of the enclosed list.
+
+## Limits (as before)
+- These are compromise-indicator aggregates, not theft verdicts and not
+  identification of any person. A reused added key appearing as a drain
+  suspect means the same address plays both roles on-chain; it does not by
+  itself prove one operator.
+- Account counts differ by counting base: first-addition (4,756 for
+  GDXZUYU7…) vs census-side including 2nd+ additions (4,784). Both are
+  from the same underlying data.

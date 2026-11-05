@@ -1,0 +1,61 @@
+Phase 2d summary - lockup-release alignment (facts, not verdicts)
+reference time (merge run): 2026-11-05T04:22:50Z
+accounts: 110650
+
+classification (all / reliability_ok only):
+  released_drained       8785 /   8085
+  released_intact       63198 /  47536
+  not_yet_released      37585 /  28748
+  no_lockup_found        1082 /    302
+  unknown_not_found         0 /      0
+  error                     0 /      0
+
+first-drain-after-release gap distribution (released_drained):
+  <3min  4929
+  <1h    75
+  <1d    319
+  <7d    813
+  >=7d   2649
+
+cross-tab class x locked_out_2c (True/False/None):
+  released_drained     locked=7404 not=1381 unknown=0
+  released_intact      locked=62496 not=702 unknown=0
+  not_yet_released     locked=36461 not=1124 unknown=0
+  no_lockup_found      locked=1082 not=0 unknown=0
+
+cross-tab class x drain_after_add_2b:
+  released_drained     drain2b=8785 nodrain2b=0
+  released_intact      drain2b=26 nodrain2b=63172
+  not_yet_released     drain2b=956 nodrain2b=36629
+  no_lockup_found      drain2b=4 nodrain2b=1078
+
+not_yet_released: next release by month (top 12):
+  2027-12 3923
+  2027-10 2943
+  2027-11 2791
+  2028-01 2783
+  2028-02 2100
+  2028-05 1874
+  2028-06 1823
+  2027-03 1612
+  2027-09 1485
+  2027-02 1477
+  2026-12 1463
+  2028-04 1424
+
+top 15 destinations of first drain-after-release sends:
+  GDXZUYU7KF5QATLXEBIRZJ4NWKNYP3OFRNQVL2AUSQ2EUDD2XJA54JTQ accounts=2061
+  GBXHS6NJONBIDPXRQ4T7ZHUAR3U2MFQBDNL267O7DXVP5UBZ2FWUX7YD accounts=1558
+  GDTU5EXYXD3XIGLM6MYVQ5MEO5V7BYQGH6FCMPY4232XQJU6G273RXYJ accounts=880
+  GBC6NRTTQLRCABQHIR5J4R4YDJWFWRAO4ZRQIM2SVI5GSIZ2HZ42RINW accounts=646 [exchange wallet: Gate.io-linked (third-party label)]
+  GDPBE5RXPAHDFQD3YPVYKXWENYYRPSOM6O3D2KPHH4L4C3VGDBDX6XVX accounts=529
+  GALYJFJ5SVD45FBWN2GT4IW67SEZ3IBOFSBSPUFCWV427NBNLG3PXEQU accounts=253 [exchange wallet: OKX (third-party label)]
+  GDFNWH6ZFJVHJDLBMNOUT35X4EEKQVJAO3ZDL4NL7VQJLC4PJOQFWJ75 accounts=190 [exchange wallet: Bitget (third-party label)]
+  GAA7EFSR2WFYOLG2SCIIEHYYVV4R6AY65Z4IXOHCNOATTJB32G55GHAY accounts=169
+  GATOC5LCD5PVVG4IDCRRURWJMN3R7RLEUJMGAYMA5DGIJP2D46HAXCMA accounts=152
+  GD6YU5BKJG5YJ4SZDK6FQGR6BTYSJYIQ2U6DUJSJLWWYUEKBKHPZIE6P accounts=128
+  GD3ZGYRWX456BPKJ7O2MHA3NS32HWU66OPED2AUCUTNOYHROCLHD4BPS accounts=125
+  GDGFISLJWUT6KEB4TFHJSEDEBE7RWP7P72RDVKW5LMRZNPKHEUODKHA7 accounts=124
+  GDCRWNNL55QS5ID5TGKKYTVFE7VEUIWQK7SMKE2ZLJ32LD572KU5ZIDU accounts=120
+  GAYO5C2I77NYDHWUQYIVJY6FZTIITSZCDSDRM7J7EA6YFBWAPFFD5FTH accounts=118
+  GBYJXA4L7M4OLLV4YCOQAMHSCI3UXN3DCBWSTY47PUBMFHDVJWCGA2JT accounts=83

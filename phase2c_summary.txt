@@ -1,0 +1,25 @@
+Phase 2c summary - fresh threshold/signer snapshot (facts, not verdicts)
+accounts: 110650 (all status ok, not_found 0, errors 0)
+fetched: 2026-11-04T19:10:05Z .. 2026-11-04T23:56:33Z (UTC)
+locked_out (master_weight < med AND master_weight < high): 107443 (97.1%)
+not locked out: 3207
+added key still present: 110622 (removed: 28)
+threshold patterns (low/med/high), top first:
+  2/2/2: 87630
+  1/2/2: 17455
+  0/0/0: 2482
+  0/2/2: 1044
+  2/2/3: 865
+  1/0/1: 679
+  255/255/255: 238
+  10/10/10: 209
+  2/0/2: 41
+  2/0/1: 3
+  3/3/3: 3
+  1/1/1: 1
+master weight distribution:
+  weight 0: 1117
+  weight 1: 109529
+  weight 2: 1
+  weight 5: 2
+  weight 9: 1

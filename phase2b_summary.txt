@@ -1,0 +1,56 @@
+Phase 2b summary — compromise INDICATORS (neutral facts, not verdicts)
+target: accounts with >=2 signer_created events (third-party addition)
+
+worklist accounts: 110650
+processed (result files): 110650
+missing/unprocessed: 0
+fetch errors (final pass): 0  HTTP 429 total: 2
+capped: effects=3 operations=3 transactions=6
+reliability_ok (balance gate |recon-current|<=0.1 Pi): 84671 (76.5%)
+addition effect/op not located: 2
+
+indicator counts (all processed / reliability_ok only):
+  drain_after_add (a send after the addition left balance <=2 Pi): 9771 / 8896
+  drain_ever (any send in history left balance <=2 Pi): 79740 / 61910
+  lockout_tx (threshold/master-weight change in the addition tx): 42469 / 27528
+  added_signer_removed_later: 28 / 19
+  added_key_still_present (current signers): 110622 / 84652
+  has first_send_after_add: 21201 / 13108
+
+cross-tab drain_after_add x key_shared_count>=10:
+  key_shared>=10: n=108050 drain_after_add=8981
+  key_shared<10: n=2600 drain_after_add=790
+cross-tab drain_after_add x lockout_tx:
+  lockout_tx=yes: n=42469 drain_after_add=4983
+  lockout_tx=no: n=68181 drain_after_add=4788
+
+first-send gap distribution among drain_after_add accounts (n=9771):
+  <1h: 166
+  <1d: 47
+  <7d: 262
+  later: 9296
+  no_send_recorded: 0
+
+top 20 destinations of first_send_after_add among drain_after_add accounts:
+  GDXZUYU7KF5QATLXEBIRZJ4NWKNYP3OFRNQVL2AUSQ2EUDD2XJA54JTQ  accounts=2069
+  GBXHS6NJONBIDPXRQ4T7ZHUAR3U2MFQBDNL267O7DXVP5UBZ2FWUX7YD  accounts=1558
+  GDTU5EXYXD3XIGLM6MYVQ5MEO5V7BYQGH6FCMPY4232XQJU6G273RXYJ  accounts=865
+  GBC6NRTTQLRCABQHIR5J4R4YDJWFWRAO4ZRQIM2SVI5GSIZ2HZ42RINW  accounts=680  [exchange wallet (Gate.io-linked, third-party label)]
+  GDPBE5RXPAHDFQD3YPVYKXWENYYRPSOM6O3D2KPHH4L4C3VGDBDX6XVX  accounts=524
+  GALYJFJ5SVD45FBWN2GT4IW67SEZ3IBOFSBSPUFCWV427NBNLG3PXEQU  accounts=292  [exchange wallet (OKX, third-party label)]
+  GDFNWH6ZFJVHJDLBMNOUT35X4EEKQVJAO3ZDL4NL7VQJLC4PJOQFWJ75  accounts=221  [exchange wallet (Bitget, third-party label)]
+  GAA7EFSR2WFYOLG2SCIIEHYYVV4R6AY65Z4IXOHCNOATTJB32G55GHAY  accounts=169
+  GATOC5LCD5PVVG4IDCRRURWJMN3R7RLEUJMGAYMA5DGIJP2D46HAXCMA  accounts=152
+  GD6YU5BKJG5YJ4SZDK6FQGR6BTYSJYIQ2U6DUJSJLWWYUEKBKHPZIE6P  accounts=128
+  GD3ZGYRWX456BPKJ7O2MHA3NS32HWU66OPED2AUCUTNOYHROCLHD4BPS  accounts=126
+  GDGFISLJWUT6KEB4TFHJSEDEBE7RWP7P72RDVKW5LMRZNPKHEUODKHA7  accounts=124
+  GDCRWNNL55QS5ID5TGKKYTVFE7VEUIWQK7SMKE2ZLJ32LD572KU5ZIDU  accounts=124
+  GC53WQPQRKMF6ZEYMCTFHJ44767GECXEWL6TXTYVEBDSOXOGH5TTVAND  accounts=98
+  GAMHW4DHYJSXQJLSVTJHIXN64JP6MPT2N66EUMIEZWG5JJSEY42IRWDE  accounts=84
+  GBYJXA4L7M4OLLV4YCOQAMHSCI3UXN3DCBWSTY47PUBMFHDVJWCGA2JT  accounts=83
+  GC7TEFFKCSX375VVPEKBKCSXFLSOMSZ2ZYS7DT6BBIUF4C44CYFBBBYL  accounts=73
+  GAYO5C2I77NYDHWUQYIVJY6FZTIITSZCDSDRM7J7EA6YFBWAPFFD5FTH  accounts=70
+  GCDOKAUYR4362KMSX75A335AL4RLUY2VRM3DW5NZW5ZVYLSVNUPQGYLL  accounts=64
+  GAAEUI26YBQAVTKWCU4DNE3R7LVHDR2VVQB4QWC74SAFVKEGYWTA3DRI  accounts=48
+
+spot-check example account GDR67Y7GIHHHSFH74SKO2KAUKB4AV5XAY4ACNLHUXV4KZCVBSXIZOJIB: PASS (first_tp_at=2026-06-05T17:32:16Z, lockout 1/2/2, reliability_ok=no)
