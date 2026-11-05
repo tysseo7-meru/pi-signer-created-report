@@ -266,9 +266,14 @@ img { max-width: 100%; }
 </ul>
 
 <h2>データファイル</h2>
-<p>集計のサマリーを置く。アカウント単位の明細（侵害の兆候を持つ可能性のある被害者側のデータ）は公開していない。</p>
+<p>集計のサマリーと、アカウント単位の明細CSVを置く。</p>
+<div class="note">
+<p><strong>明細CSVについての注意</strong>：phase2b_indicators.csv と phase2d_accounts.csv は、鍵を追加された側、つまり<strong>被害者かもしれないアカウント</strong>についての「兆候」のデータである。明細に載っていることは侵害を受けたことの確定を意味せず、各アカウントの事情はチェーン外の情報を含めて個別に判断されるべきものである。これらのアカウントの持ち主を加害者として扱う用途には使わないでいただきたい。</p>
+</div>
 <div class="tw"><table>
 <tr><th>ファイル</th><th>内容</th></tr>
+<tr><td><a href="https://tysseo7-meru.github.io/pi-signer-created-report/phase2b_indicators.csv" target="_blank" rel="noopener">phase2b_indicators.csv</a></td><td>Phase 2b のアカウント単位明細（110,650件：追加後の送金・残高・鍵の残存などの兆候一式）</td></tr>
+<tr><td><a href="https://tysseo7-meru.github.io/pi-signer-created-report/phase2d_accounts.csv" target="_blank" rel="noopener">phase2d_accounts.csv</a></td><td>Phase 2d のアカウント単位明細（110,650件：分類・解除時刻・初回流出までの間隔など）</td></tr>
 <tr><td><a href="https://tysseo7-meru.github.io/pi-signer-created-report/census_summary.txt" target="_blank" rel="noopener">census_summary.txt</a></td><td>全数調査の集計（時期分布・使い回し鍵の上位を含む）</td></tr>
 <tr><td><a href="https://tysseo7-meru.github.io/pi-signer-created-report/phase2b_summary.txt" target="_blank" rel="noopener">phase2b_summary.txt</a></td><td>Phase 2b の兆候集計</td></tr>
 <tr><td><a href="https://tysseo7-meru.github.io/pi-signer-created-report/phase2c_summary.txt" target="_blank" rel="noopener">phase2c_summary.txt</a></td><td>Phase 2c の設定スナップショット集計</td></tr>
