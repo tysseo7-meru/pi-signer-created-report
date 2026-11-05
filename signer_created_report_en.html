@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>signer_created Full Census Report (Project No.3)</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-34HN1HE1WG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-34HN1HE1WG');
+</script>
+<style>
+:root { color-scheme: light dark; }
+body { font-family: -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif; margin: 0; background: #f6f7f9; color: #1a1d21; line-height: 1.7; overflow-x: hidden; }
+main { max-width: 980px; margin: 0 auto; padding: 24px 18px 64px; background: #fff; }
+h1 { font-size: 1.5rem; line-height: 1.4; }
+h2 { margin-top: 2.2em; border-bottom: 2px solid #e3e6ea; padding-bottom: .3em; font-size: 1.2rem; }
+h3 { margin-top: 1.6em; font-size: 1.05rem; }
+.tw { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { border-collapse: collapse; width: 100%; min-width: 460px; margin: 1em 0; font-size: .86rem; }
+@media (max-width: 600px) { th, td { padding: 5px 5px; } table { font-size: .8rem; min-width: 0; } }
+th, td { border: 1px solid #d8dce1; padding: 6px 8px; text-align: left; vertical-align: top; }
+th { background: #f0f2f5; }
+td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td .addr, th .addr { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .78rem; word-break: break-all; display: block; width: 12ch; }
+.addrf { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .78rem; overflow-wrap: anywhere; }
+.meta { background: #f0f2f5; border-radius: 8px; padding: 14px 18px; font-size: .92rem; }
+.meta p { margin: .3em 0; }
+.note { background: #fff8e6; border: 1px solid #f0d98c; border-radius: 8px; padding: 10px 16px; font-size: .9rem; }
+a { color: #0b5cad; overflow-wrap: anywhere; }
+code { overflow-wrap: anywhere; }
+img { max-width: 100%; }
+.small { font-size: .85rem; color: #555; overflow-wrap: anywhere; }
+@media (prefers-color-scheme: dark) {
+  body { background: #121212; color: #e8e8e8; }
+  main { background: #1a1a1a; }
+  h2 { border-bottom-color: #3a3a3a; }
+  th, td { border-color: #3d3d3d; }
+  th { background: #262626; }
+  .meta { background: #242424; }
+  .note { background: #2b2410; border-color: #8a7420; }
+  a { color: #7cc4ff; }
+  .small { color: #a8a8a8; }
+}
+</style>
+</head>
+<body>
+<main>
+<h1>Full census of signer_created - tracking accounts that received a third-party key addition (Project No.3)</h1>
+<div class="meta">
+<p>This report records an investigation carried out by the AI assistant "Moko" (model: Muse Spark 1.3, by Meta) using only Pi Network's on-chain records (the effect and transaction history published through the Horizon API). It does not attempt to identify individuals by speculation; it is an aggregation of facts left on the chain.</p>
+<p>Scope: from the genesis of Pi Mainnet to 2026-11-01T09:59:30Z (ledger 29,518,771).</p>
+<p><a href="https://tysseo7-meru.github.io/moco-project-index/">Back to the report index</a></p>
+<p>Japanese version: <a href="https://tysseo7-meru.github.io/pi-signer-created-report/signer_created_report.html">Japanese report</a>. Detailed figures and supplementary material are collected in the appendix at the end of this page.</p>
+</div>
+
+<h2>Overview</h2>
+<p>Around 5 June 2026, multiple users reported that an unknown key had been added to their accounts and that they could no longer operate them (the accounts had been turned into multisig accounts). This investigation checks, from the chain's records, how large this phenomenon is and whether similar additions have continued since.</p>
+<p>The study proceeds as follows. First, every "a key was added" event (signer_created) is collected from the network's entire record. Next, every account that received an addition that was not its own registration (a third-party addition) is tracked, and three things are aggregated: (1) whether any send happened after the addition, (2) whether the owner is in a locked-out state, and (3) how the release of locked balances lines up with the timing of sends.</p>
+<h3>Terms</h3>
+<p>signer_created is one type of blockchain record; it represents the event "a signing key was added to an account". An account can register several keys, and each key carries a "weight" (points). Every kind of operation has a "threshold" (the points required), in three levels: low for minor changes, med for payments, and high for managing keys and settings. For example, if the owner's key has weight 1 and the payment threshold is 2, the owner's key alone cannot make a payment. This report calls that state "locked out". When an account is created, its owner's key is registered automatically (this is also recorded as signer_created); this report calls that the "self registration". Any other addition is a "third-party addition". Part of the Pi received through migration is locked for a set period; when the period ends it is "released" and becomes usable.</p>
+<h3>Example account</h3>
+<p>In the account that prompted the original report, <span class="addrf">GDR67Y7GIHHHSFH74SKO2KAUKB4AV5XAY4ACNLHUXV4KZCVBSXIZOJIB</span>, a key <span class="addrf">GBLY27C6YKMLKDYOY7UUXP5FKGTI4GTFPOSNBQOMOAZOYK5CSWYIAWAG</span> (weight 1) was added on 2026-06-05T17:32:16Z, and in the same transaction the thresholds were raised to low 1 / med 2 / high 2 - a shape in which the owner's key alone (weight 1) can neither send nor change settings. The account's self registration dates from 2024-01-06; the addition was a separate event.</p>
+<div class="note">
+<p>Note: a third-party key addition is not, by itself, proof of a compromise. For example, it has been confirmed that creating a mainnet app in the Pi Developer Portal once involved adding a designated key as a normal step. This report presents an aggregation of events (indicators); it does not determine whether any individual account was compromised.</p>
+</div>
+
+<h2>Summary</h2>
+<p>We examined every key-addition record on the Pi blockchain. Third-party additions affected 110,650 accounts, almost all of them concentrated on a single day, 5 June 2026, with none after that day. 97.1% of these accounts cannot be operated with the owner's key alone, and 48% of the 26.52 million Pi whose lockups have since been released has been sent out.</p>
+<div class="tw"><table>
+<tr><th>Area</th><th>Result</th></tr>
+<tr><td>Full census</td><td>signer_created events totalled 18,444,110. Third-party additions numbered 128,871 events (110,650 accounts); 99.8% of them were concentrated on the single day 2026-06-05, and from that day to the end of the scope there were zero.</td></tr>
+<tr><td>Tracking: sends after the addition</td><td>Of the 110,650 accounts that received an addition, 21,201 (19.2%) sent after the addition. Most of those sends happened seven days or more after the addition.</td></tr>
+<tr><td>Tracking: lockout</td><td>107,443 accounts (97.1%) are still in a locked-out state. The added key remains in 110,622 accounts; it was removed in only 28.</td></tr>
+<tr><td>Tracking: release and sends</td><td>18,930 accounts sent after a lockup release. Of those, 10,594 (56.0%) sent within 3 minutes of the preceding release. 17,351 of the accounts that sent after a release are locked out - sends from accounts that should not be able to send with the owner's key alone.</td></tr>
+</table></div>
+
+<h2>Part 1 - Full census of signer_created</h2>
+<p>All effects on Horizon (records of on-chain changes) were scanned from genesis to the end of the scope, and every event of type 10 (signer_created) was extracted.</p>
+<div class="tw"><table>
+<tr><th>Item</th><th>Count</th></tr>
+<tr><td>Total signer_created events</td><td class="num">18,444,110</td></tr>
+<tr><td>Total accounts</td><td class="num">18,315,239</td></tr>
+<tr><td>Third-party additions (events)</td><td class="num">128,871</td></tr>
+<tr><td>Accounts that received a third-party addition</td><td class="num">110,650</td></tr>
+</table></div>
+<p class="small">Because a self-registration signer_created always occurs exactly once when an account is created, the total above corresponds to the total number of accounts within the confirmed scope (every account had exactly one self registration).</p>
+<p>The number of events (128,871) exceeds the number of accounts (110,650) because some accounts received more than one addition. The difference, 18,221, is second and later additions; 17,073 accounts received two or more additions.</p>
+<h3>When the third-party additions happened</h3>
+<p>Third-party additions numbered 128,871 events (110,650 accounts). Almost all were concentrated on the single day 2026-06-05; the last was at 19:47:14Z that day, and there were zero from then to the end of the scope. Counts before that were tiny: the cumulative total before June 2026 is only 17.</p>
+<h3>Keys used repeatedly</h3>
+<p>2,832 keys were added to more than one account. The added keys had weight 1 in 126,921 of 128,871 additions (98.5%). The top keys are all concentrated within a few hours on 2026-06-05, their activity windows overlap, and they stop at the same time. In particular, the top two keys below (GCQX4C2R... and GAMHW4DH...) were added as a pair in all 7,938 accounts where GAMHW4DH... appears. This is consistent with a single organised operation sharing a pool of keys (the chain record alone cannot distinguish one group of operators from several groups using the same tooling).</p>
+<div class="tw"><table>
+<tr><th>#</th><th>Added key</th><th>Accounts</th><th>Activity window (2026-06-05, UTC)</th></tr>
+<tr><td class="num">1</td><td><span class="addr">GCSOLUCB46LIUPHBIWUA3ACO4J4BKJZHICDM7BQ7ZHNLSHLQGNVNI5K6</span></td><td class="num">17,331</td><td>13:30:59 - 19:46:06</td></tr>
+<tr><td class="num">2</td><td><span class="addr">GCQX4C2RXKER767BBQVMX3YMCJFFHMFTVJ536Z2NKVT6CC32LWZBPMUG</span></td><td class="num">7,939</td><td>14:55:40 - 19:44:58</td></tr>
+<tr><td class="num">3</td><td><span class="addr">GAMHW4DHYJSXQJLSVTJHIXN64JP6MPT2N66EUMIEZWG5JJSEY42IRWDE</span></td><td class="num">7,938</td><td>15:05:50 - 19:44:58</td></tr>
+<tr><td class="num">4</td><td><span class="addr">GDXZUYU7KF5QATLXEBIRZJ4NWKNYP3OFRNQVL2AUSQ2EUDD2XJA54JTQ</span></td><td class="num">4,784</td><td>17:50:25 - 19:40:49</td></tr>
+<tr><td class="num">5</td><td><span class="addr">GAFNVHTJPUZWXSTMOU33PMD7DLIDAYDLTWOPF3IUH7LEALFO6VC2DBLQ</span></td><td class="num">3,409</td><td>08:30:31 - 16:42:06</td></tr>
+<tr><td class="num">6</td><td><span class="addr">GC7TEFFKCSX375VVPEKBKCSXFLSOMSZ2ZYS7DT6BBIUF4C44CYFBBBYL</span></td><td class="num">1,282</td><td>10:05:56 - 15:16:43</td></tr>
+<tr><td class="num">7</td><td><span class="addr">GAB3DZLFXTDBLQPGDGCQIH7EGXSGS3AZWR43S37OXEAG3GU3AYHY6NRI</span></td><td class="num">770</td><td>09:27:55 - 19:40:01</td></tr>
+</table></div>
+
+<h2>Part 2 - Tracking the accounts that received an addition</h2>
+<p>The subject is all 110,650 accounts that received a third-party addition. Each account's history and its current key and threshold configuration were retrieved, and its movements after the addition were aggregated. Because this study uses no balance criterion, all accounts are aggregated as they are.</p>
+<h3>(1) Sends after the addition</h3>
+<div class="tw"><table>
+<tr><th>Category</th><th>Accounts</th><th>Share</th></tr>
+<tr><td>Sent after the addition</td><td class="num">21,201</td><td class="num">19.2%</td></tr>
+<tr><td>No send after the addition</td><td class="num">89,449</td><td class="num">80.8%</td></tr>
+</table></div>
+<p>The interval from the addition to the first send is as follows.</p>
+<div class="tw"><table>
+<tr><th>Addition to first send</th><th>Accounts</th></tr>
+<tr><td>Under 1 hour</td><td class="num">591</td></tr>
+<tr><td>1 hour to under 1 day</td><td class="num">363</td></tr>
+<tr><td>1 day to under 7 days</td><td class="num">901</td></tr>
+<tr><td>7 days or more</td><td class="num">19,346</td></tr>
+</table></div>
+<p>Most sends (91.3%) happened seven days or more after the addition. Funds did not move immediately after the addition; they moved after time had passed. What lies at the end of that wait is the lockup release, examined in (3). The main destinations of the first send after the addition are as follows.</p>
+<div class="tw"><table>
+<tr><th>#</th><th>Destination</th><th>Accounts</th><th>Note</th></tr>
+<tr><td class="num">1</td><td><span class="addr">GBXHS6NJONBIDPXRQ4T7ZHUAR3U2MFQBDNL267O7DXVP5UBZ2FWUX7YD</span></td><td class="num">4,745</td><td>Unknown</td></tr>
+<tr><td class="num">2</td><td><span class="addr">GDXZUYU7KF5QATLXEBIRZJ4NWKNYP3OFRNQVL2AUSQ2EUDD2XJA54JTQ</span></td><td class="num">2,165</td><td>On Project No.2's confirmed list</td></tr>
+<tr><td class="num">3</td><td><span class="addr">GBJL3O3CAYOPSEZBGK3RQMOIOST24FBMSJ4EY4NWRJTMO5ZOAACFPCP7</span></td><td class="num">1,408</td><td>Unknown</td></tr>
+<tr><td class="num">4</td><td><span class="addr">GD3ZGYRWX456BPKJ7O2MHA3NS32HWU66OPED2AUCUTNOYHROCLHD4BPS</span></td><td class="num">1,236</td><td>Unknown</td></tr>
+<tr><td class="num">5</td><td><span class="addr">GDTU5EXYXD3XIGLM6MYVQ5MEO5V7BYQGH6FCMPY4232XQJU6G273RXYJ</span></td><td class="num">1,009</td><td>Unknown</td></tr>
+<tr><td class="num">6</td><td><span class="addr">GBC6NRTTQLRCABQHIR5J4R4YDJWFWRAO4ZRQIM2SVI5GSIZ2HZ42RINW</span></td><td class="num">851</td><td>On Project No.2's confirmed list</td></tr>
+<tr><td class="num">7</td><td><span class="addr">GALYJFJ5SVD45FBWN2GT4IW67SEZ3IBOFSBSPUFCWV427NBNLG3PXEQU</span></td><td class="num">794</td><td>On Project No.2's confirmed list</td></tr>
+<tr><td class="num">8</td><td><span class="addr">GACWXNWHYA4UBUJBLTOBMSVNGVK33M4LQACQAGECPSCMWKCJFAJ62IDV</span></td><td class="num">783</td><td>Unknown</td></tr>
+<tr><td class="num">9</td><td><span class="addr">GDPBE5RXPAHDFQD3YPVYKXWENYYRPSOM6O3D2KPHH4L4C3VGDBDX6XVX</span></td><td class="num">681</td><td>Unknown</td></tr>
+<tr><td class="num">10</td><td><span class="addr">GC53WQPQRKMF6ZEYMCTFHJ44767GECXEWL6TXTYVEBDSOXOGH5TTVAND</span></td><td class="num">530</td><td>Unknown</td></tr>
+</table></div>
+<h3>(2) The lockout state</h3>
+<p>A threshold increase within the same transaction as the addition occurred in 42,469 accounts. That figure counts only changes inside the same transaction, not increases made in separate transactions. The current thresholds and key composition are as follows.</p>
+<div class="tw"><table>
+<tr><th>Category</th><th>Accounts</th><th>Share</th></tr>
+<tr><td>Locked out (the owner's key alone is below both the payment and the management thresholds)</td><td class="num">107,443</td><td class="num">97.1%</td></tr>
+<tr><td>Not locked out</td><td class="num">3,207</td><td class="num">2.9%</td></tr>
+</table></div>
+<div class="tw"><table>
+<tr><th>Threshold pattern (low/med/high)</th><th>Accounts</th><th>Share</th></tr>
+<tr><td>2/2/2</td><td class="num">87,630</td><td class="num">79.2%</td></tr>
+<tr><td>1/2/2</td><td class="num">17,455</td><td class="num">15.8%</td></tr>
+<tr><td>0/0/0</td><td class="num">2,482</td><td class="num">2.2%</td></tr>
+<tr><td>0/2/2</td><td class="num">1,044</td><td class="num">0.9%</td></tr>
+<tr><td>2/2/3</td><td class="num">865</td><td class="num">0.8%</td></tr>
+<tr><td>1/0/1</td><td class="num">679</td><td class="num">0.6%</td></tr>
+<tr><td>Other</td><td class="num">495</td><td class="num">0.4%</td></tr>
+</table></div>
+<p>The owner's key has weight 1 in 109,529 accounts, 0 (the owner's key can do nothing at all) in 1,117, and 2 or more in 4. The added key is still present in 110,622 accounts; it was later removed in only 28.</p>
+<p>A locked-out account cannot change its own settings through the owner's actions, so this picture barely changes over time.</p>
+<h3>(3) Lockup releases and the timing of sends</h3>
+<p>Each account's lockup release times were reconstructed from the periods recorded in the claimant conditions of its effects (type 51). The reference time for classification is 2026-11-05T04:22:50Z.</p>
+<div class="tw"><table>
+<tr><th>Category</th><th>Accounts</th><th>Share</th></tr>
+<tr><td>Sent after a release</td><td class="num">18,930</td><td class="num">17.1%</td></tr>
+<tr><td>Released, but no send since</td><td class="num">53,053</td><td class="num">47.9%</td></tr>
+<tr><td>Not yet released</td><td class="num">37,585</td><td class="num">34.0%</td></tr>
+<tr><td>No lockup record found</td><td class="num">1,082</td><td class="num">1.0%</td></tr>
+</table></div>
+<p>For the 18,930 accounts that sent after a release, the interval from the preceding release to the first send is as follows. A majority are concentrated under 3 minutes.</p>
+<div class="tw"><table>
+<tr><th>Preceding release to first send</th><th>Accounts</th><th>Share</th></tr>
+<tr><td>Under 3 minutes</td><td class="num">10,594</td><td class="num">56.0%</td></tr>
+<tr><td>3 minutes to under 1 hour</td><td class="num">241</td><td class="num">1.3%</td></tr>
+<tr><td>1 hour to under 1 day</td><td class="num">803</td><td class="num">4.2%</td></tr>
+<tr><td>1 day to under 7 days</td><td class="num">1,493</td><td class="num">7.9%</td></tr>
+<tr><td>7 days or more</td><td class="num">5,799</td><td class="num">30.6%</td></tr>
+</table></div>
+<p>Overlaying the lockout state from (2) makes the picture clearer.</p>
+<div class="tw"><table>
+<tr><th>Category</th><th>Locked out</th><th>Not locked out</th></tr>
+<tr><td>Sent after a release</td><td class="num">17,351</td><td class="num">1,579</td></tr>
+<tr><td>Released, but no send since</td><td class="num">52,549</td><td class="num">504</td></tr>
+<tr><td>Not yet released</td><td class="num">36,461</td><td class="num">1,124</td></tr>
+<tr><td>No lockup record found</td><td class="num">1,082</td><td class="num">0</td></tr>
+</table></div>
+<p>A locked-out account cannot send at all with the owner's key alone. The sends of the 17,351 accounts that are "locked out and sent after a release" therefore cannot occur without the involvement of at least the added key. Of those, 10,426 sent within 3 minutes of the release. Conversely, the sends of the 1,579 accounts that are not locked out may include the owner's own operations, so this report always counts them separately.</p>
+<p>The main destinations of the first send after a release are as follows; the line-up overlaps with the list in (1).</p>
+<div class="tw"><table>
+<tr><th>#</th><th>Destination</th><th>Accounts</th><th>Note</th></tr>
+<tr><td class="num">1</td><td><span class="addr">GBXHS6NJONBIDPXRQ4T7ZHUAR3U2MFQBDNL267O7DXVP5UBZ2FWUX7YD</span></td><td class="num">4,806</td><td>Unknown</td></tr>
+<tr><td class="num">2</td><td><span class="addr">GDXZUYU7KF5QATLXEBIRZJ4NWKNYP3OFRNQVL2AUSQ2EUDD2XJA54JTQ</span></td><td class="num">2,547</td><td>On Project No.2's confirmed list</td></tr>
+<tr><td class="num">3</td><td><span class="addr">GDTU5EXYXD3XIGLM6MYVQ5MEO5V7BYQGH6FCMPY4232XQJU6G273RXYJ</span></td><td class="num">1,020</td><td>Unknown</td></tr>
+<tr><td class="num">4</td><td><span class="addr">GD3ZGYRWX456BPKJ7O2MHA3NS32HWU66OPED2AUCUTNOYHROCLHD4BPS</span></td><td class="num">828</td><td>Unknown</td></tr>
+<tr><td class="num">5</td><td><span class="addr">GACWXNWHYA4UBUJBLTOBMSVNGVK33M4LQACQAGECPSCMWKCJFAJ62IDV</span></td><td class="num">784</td><td>Unknown</td></tr>
+<tr><td class="num">6</td><td><span class="addr">GBC6NRTTQLRCABQHIR5J4R4YDJWFWRAO4ZRQIM2SVI5GSIZ2HZ42RINW</span></td><td class="num">781</td><td>On Project No.2's confirmed list</td></tr>
+<tr><td class="num">7</td><td><span class="addr">GBJL3O3CAYOPSEZBGK3RQMOIOST24FBMSJ4EY4NWRJTMO5ZOAACFPCP7</span></td><td class="num">705</td><td>Unknown</td></tr>
+<tr><td class="num">8</td><td><span class="addr">GDPBE5RXPAHDFQD3YPVYKXWENYYRPSOM6O3D2KPHH4L4C3VGDBDX6XVX</span></td><td class="num">704</td><td>Unknown</td></tr>
+<tr><td class="num">9</td><td><span class="addr">GALYJFJ5SVD45FBWN2GT4IW67SEZ3IBOFSBSPUFCWV427NBNLG3PXEQU</span></td><td class="num">626</td><td>On Project No.2's confirmed list</td></tr>
+<tr><td class="num">10</td><td><span class="addr">GD24QVE4R42E4XRDF6T5IN6UAQLD2WN7OQGUC2FBHFUUZM7GLE4KG6YA</span></td><td class="num">489</td><td>Unknown</td></tr>
+</table></div>
+<p>In amounts, the picture is as follows. The Pi whose lockups have been released in the tracked accounts totals 26,522,319 Pi, of which 12,772,182 Pi (48.2%) was sent out after a release. Even among locked-out accounts only, 12,079,226 Pi (46.1%) of the released 26,187,041 Pi was sent.</p>
+<div class="tw"><table>
+<tr><th>Amount (Pi)</th><th>All accounts</th><th>Locked-out accounts only</th></tr>
+<tr><td>Total released</td><td class="num">26,522,319</td><td class="num">26,187,041</td></tr>
+<tr><td>Total claimed</td><td class="num">25,701,246</td><td class="num">25,389,520</td></tr>
+<tr><td>Sent out after a release (share of the released total)</td><td class="num">12,772,182 (48.2%)</td><td class="num">12,079,226 (46.1%)</td></tr>
+<tr><td>Total not yet released</td><td class="num">63,042,087</td><td class="num">61,879,242</td></tr>
+</table></div>
+<p>The "sent out after a release" total is the sum of sends made at a time later than a release; it does not establish that any individual send consisted of that released amount itself. A "claim" is the procedure by which a released lockup balance is received as a spendable balance.</p>
+
+<h2>Discussion</h2>
+<p>The working hypothesis this study tests is the following. An attacker adds their own key to an account whose passphrase they have stolen, and raises the thresholds to lock the owner out. The owner alone can neither send nor remove the key. The attacker, combining the owner's key and the added key, can operate the account. The prize is not the balance at hand but the locked balance that cannot be moved yet, and the attacker waits for its release date.</p>
+<p>If this hypothesis is correct, we should observe "locked-out accounts sending right after their lockup release". The results match that prediction. 17,351 accounts sent after a release while locked out, 10,426 of them within 3 minutes of the release. That most sends after an addition happened seven days or more later also fits the hypothesis of waiting for a release rather than draining on the spot. This is, however, a match with a prediction, not proof for any individual account.</p>
+<p>As for the addition work itself, Part 1 showed signs consistent with a single organised operation: the sharing of a pool of keys, the overlapping activity windows, and the paired simultaneous additions.</p>
+
+<h2>Limitations</h2>
+<p>Sends are counted regardless of amount or of the balance after the send. "Sent after a release" is not synonymous with "was drained".</p>
+<p>Sends from accounts that are not locked out may include the owner's own operations. This report shows those counts separately.</p>
+<p>The "not yet released" counts are as of the reference time (2026-11-05T04:22:50Z) and will decrease as time passes.</p>
+<p>Lockup release times are reconstructed from the periods recorded in the effects' claimant conditions.</p>
+<p>The census scope ends at 2026-11-01T09:59:30Z. The account information used for tracking was retrieved between 2026-11-03 and 2026-11-05; later changes are not included.</p>
+<p>Labels such as exchange wallets rest on third-party reports and press coverage, not on official announcements by the exchanges.</p>
+
+<h2>Data files</h2>
+<p>The data behind the aggregations is published on the same site.</p>
+<ul>
+<li><a href="https://tysseo7-meru.github.io/pi-signer-created-report/census_summary.txt">Census aggregates (census_summary.txt)</a></li>
+<li><a href="https://tysseo7-meru.github.io/pi-signer-created-report/tracking_summary.txt">Tracking aggregates (tracking_summary.txt)</a></li>
+<li><a href="https://tysseo7-meru.github.io/pi-signer-created-report/phase2c_summary.txt">Lockout (current thresholds) aggregates (phase2c_summary.txt)</a></li>
+<li><a href="https://tysseo7-meru.github.io/pi-signer-created-report/release_amounts_summary.txt">Released-Pi amount aggregates (release_amounts_summary.txt)</a></li>
+<li><a href="https://tysseo7-meru.github.io/pi-signer-created-report/tracking_accounts.csv">Per-account tracking details (tracking_accounts.csv, 110,650 rows)</a></li>
+</ul>
+<div class="note">
+<p>Note on the per-account details: this list covers accounts that received a third-party key addition - that is, the possibly-victim side - and records only the facts of additions, lockouts, releases and sends. Being listed is not proof of a compromise, and circumstances differ by account. This data must not be used to treat the account holders as perpetrators.</p>
+</div>
+
+<h2>Appendix</h2>
+<p class="small">Details left out of the main text are collected here.</p>
+<h3>Third-party additions by day</h3>
+<div class="tw"><table>
+<tr><th>Date</th><th>Events</th></tr>
+<tr><td>2026-06-01</td><td class="num">1</td></tr>
+<tr><td>2026-06-03</td><td class="num">16</td></tr>
+<tr><td>2026-06-04</td><td class="num">184</td></tr>
+<tr><td>2026-06-05</td><td class="num">128,653</td></tr>
+<tr><td>Other (2 in 2023, 10 in 2025, 5 in 2026 outside June)</td><td class="num">17</td></tr>
+</table></div>
+<h3>Events per account</h3>
+<div class="tw"><table>
+<tr><th>signer_created events</th><th>Accounts</th></tr>
+<tr><td>1</td><td class="num">18,204,589</td></tr>
+<tr><td>2</td><td class="num">93,577</td></tr>
+<tr><td>3</td><td class="num">16,186</td></tr>
+<tr><td>4</td><td class="num">633</td></tr>
+<tr><td>5</td><td class="num">247</td></tr>
+<tr><td>6</td><td class="num">7</td></tr>
+</table></div>
+<p>Every account had exactly one self registration (accounts with two or more self registrations: 0). Therefore, accounts with two or more events are accounts that received at least one third-party addition, and they number 110,650. Part 2 tracks all of them.</p>
+<h3>Census breakdown</h3>
+<div class="tw"><table>
+<tr><th>Item</th><th>Count</th></tr>
+<tr><td>Total effects scanned</td><td class="num">398,948,176</td></tr>
+<tr><td>Total signer_created events</td><td class="num">18,444,110</td></tr>
+<tr><td>of which self registrations</td><td class="num">18,315,239</td></tr>
+<tr><td>of which third-party additions</td><td class="num">128,871</td></tr>
+</table></div>
+<h3>Next release dates of not-yet-released accounts</h3>
+<p>Of the 37,585 "not yet released" accounts, 36,461 are locked out. Their next releases concentrate from the second half of 2027 into the first half of 2028.</p>
+<div class="tw"><table>
+<tr><th>Month of next release</th><th>Accounts</th></tr>
+<tr><td>December 2027</td><td class="num">3,923</td></tr>
+<tr><td>October 2027</td><td class="num">2,943</td></tr>
+<tr><td>November 2027</td><td class="num">2,791</td></tr>
+<tr><td>January 2028</td><td class="num">2,783</td></tr>
+<tr><td>February 2028</td><td class="num">2,100</td></tr>
+<tr><td>May 2028</td><td class="num">1,874</td></tr>
+<tr><td>June 2028</td><td class="num">1,823</td></tr>
+<tr><td>March 2027</td><td class="num">1,612</td></tr>
+</table></div>
+<h3>Cross-check against Project No.2's confirmed list</h3>
+<p>This report's main text uses no balance criterion, so it cannot distinguish whether a post-release send "drained almost everything or was only partial". As corroboration under that strict criterion, the results of a cross-check against Project No.2's list - confirmed with the original method - are placed here.</p>
+<p>Project No.2 applied the original method to the Enclosed Mainnet period and confirmed 1,980 suspect addresses. The method combines conditions: a large send of 1,000 Pi or more; no incoming payment history on the sending side; a post-send balance of 2 Pi or less; and a send less than 3 minutes after a lockup release - including the balance condition that this report does not use. We examine how the keys and accounts of this study overlap with a list confirmed under those strict conditions.</p>
+<h4>Key cross-check</h4>
+<p>Of the keys used in third-party additions, the following six were on No.2's confirmed list. Together they were added to 4,988 accounts.</p>
+<div class="tw"><table>
+<tr><th>#</th><th>Added key</th><th>Accounts it was added to</th><th>On No.1's list (8,132)?</th></tr>
+<tr><td class="num">1</td><td><span class="addr">GDXZUYU7KF5QATLXEBIRZJ4NWKNYP3OFRNQVL2AUSQ2EUDD2XJA54JTQ</span></td><td class="num">4,784</td><td>No</td></tr>
+<tr><td class="num">2</td><td><span class="addr">GBLY27C6YKMLKDYOY7UUXP5FKGTI4GTFPOSNBQOMOAZOYK5CSWYIAWAG</span></td><td class="num">109</td><td>No</td></tr>
+<tr><td class="num">3</td><td><span class="addr">GBX2JNJQ665HIX3Q6CN3MQK5ZJ6UEEQW7YIX67SU2H3K6DHOXA3BD3SI</span></td><td class="num">42</td><td>Yes</td></tr>
+<tr><td class="num">4</td><td><span class="addr">GC6ASONBS7MW6TWBOYMAEYHKOHLOAFJ5UTOD4QLU3QK425PZE75BCINC</span></td><td class="num">26</td><td>No</td></tr>
+<tr><td class="num">5</td><td><span class="addr">GA4XXJN5ANBQXCGX2VFCT3WVDL45POR54NZ7KDUVF6G4PJQMXBRVJHOD</span></td><td class="num">25</td><td>No</td></tr>
+<tr><td class="num">6</td><td><span class="addr">GBM6MMGT4YHXEARDRE35IP3OHRKA5AIAEUHCP34V54UZBLCLTXMW2SAK</span></td><td class="num">2</td><td>No</td></tr>
+</table></div>
+<p>Among these, GBX2JNJQ... is the only key appearing in all three places: No.1, No.2, and this study.</p>
+<h4>Account cross-check</h4>
+<p>Of the 110,650 tracked accounts, 23 were themselves on No.2's confirmed list (26 are on No.1's list).</p>
+<h4>Convergence point</h4>
+<p>The key <span class="addrf">GDXZUYU7KF5QATLXEBIRZJ4NWKNYP3OFRNQVL2AUSQ2EUDD2XJA54JTQ</span> was added as a key to 4,784 accounts, while also appearing as the second most common destination of the first send after an addition (2,165 accounts) and of the first send after a release (2,547 accounts), and it is also on No.2's confirmed list. The same address appears in three places: the side adding keys, the side receiving sends, and a list confirmed by a different method.</p>
+<h3>How this report came to be</h3>
+<p>This report was first published with aggregations that included a balance criterion (whether a send left a balance of 2 Pi or less), and on 2026-11-05 it was rebuilt into a composition that does not use that criterion. One reason for the rebuild is that, with the method of reconstructing balance histories, the reconstruction could be verified against the actual state for only 76.5% of accounts. The lockout breakdown in Part 2 (2) agrees - including the added key remaining in 110,622 accounts - across aggregations of configuration values retrieved at two different times.</p>
+</main>
+</body>
+</html>
