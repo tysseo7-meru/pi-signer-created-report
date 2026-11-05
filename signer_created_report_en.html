@@ -69,13 +69,13 @@ img { max-width: 100%; }
 </div>
 
 <h2>Summary</h2>
-<p>We examined every key-addition record on the Pi blockchain. Third-party additions affected 110,650 accounts, almost all of them concentrated on a single day, 5 June 2026, with none after that day. 97.1% of these accounts cannot be operated with the owner's key alone, and 48% of the 26.52 million Pi whose lockups have since been released has been sent out.</p>
+<p>We examined every key-addition record on the Pi blockchain. Third-party additions affected 110,650 accounts, almost all of them concentrated on a single day, 5 June 2026, with none after that day. 97.1% of these accounts cannot be operated with the owner's key alone. The lockups released after the additions total 9.51 million Pi, against which 11.58 million Pi was then sent out.</p>
 <div class="tw"><table>
 <tr><th>Area</th><th>Result</th></tr>
 <tr><td>Full census</td><td>signer_created events totalled 18,444,110. Third-party additions numbered 128,871 events (110,650 accounts); 99.8% of them were concentrated on the single day 2026-06-05, and from that day to the end of the scope there were zero.</td></tr>
 <tr><td>Tracking: sends after the addition</td><td>Of the 110,650 accounts that received an addition, 21,201 (19.2%) sent after the addition. Most of those sends happened seven days or more after the addition.</td></tr>
 <tr><td>Tracking: lockout</td><td>107,443 accounts (97.1%) are still in a locked-out state. The added key remains in 110,622 accounts; it was removed in only 28.</td></tr>
-<tr><td>Tracking: release and sends</td><td>Lockups totalling 26,522,319 Pi have been released, of which 12,772,182 Pi (48.2%) was sent out after a release. Of the 18,930 accounts that sent after a release, 17,351 are locked out - sends from accounts that should not be able to send with the owner's key alone.</td></tr>
+<tr><td>Tracking: release and sends</td><td>Lockups released after the additions total 9,512,407 Pi, and the Pi sent out after them reaches 11,580,858 Pi. Of the 18,930 accounts that sent after a release, 17,351 are locked out - sends from accounts that should not be able to send with the owner's key alone.</td></tr>
 </table></div>
 
 <h2>Part 1 - Full census of signer_created</h2>
@@ -194,15 +194,15 @@ img { max-width: 100%; }
 <tr><td class="num">9</td><td><span class="addr">GALYJFJ5SVD45FBWN2GT4IW67SEZ3IBOFSBSPUFCWV427NBNLG3PXEQU</span></td><td class="num">626</td><td>On Project No.2's confirmed list</td></tr>
 <tr><td class="num">10</td><td><span class="addr">GD24QVE4R42E4XRDF6T5IN6UAQLD2WN7OQGUC2FBHFUUZM7GLE4KG6YA</span></td><td class="num">489</td><td>Unknown</td></tr>
 </table></div>
-<p>In amounts, the picture is as follows. The Pi whose lockups have been released in the tracked accounts totals 26,522,319 Pi, of which 12,772,182 Pi (48.2%) was sent out after a release. Even among locked-out accounts only, 12,079,226 Pi (46.1%) of the released 26,187,041 Pi was sent.</p>
+<p>In amounts, the picture is as follows. The Pi whose lockups were released after the third-party additions totals 9,512,407 Pi, and the Pi sent out after them reaches 11,580,858 Pi. Even among locked-out accounts only, 11,420,827 Pi was sent, against 9,335,129 Pi released after the additions.</p>
 <div class="tw"><table>
 <tr><th>Amount (Pi)</th><th>All accounts</th><th>Locked-out accounts only</th></tr>
-<tr><td>Total released</td><td class="num">26,522,319</td><td class="num">26,187,041</td></tr>
-<tr><td>Total claimed</td><td class="num">25,701,246</td><td class="num">25,389,520</td></tr>
-<tr><td>Sent out after a release (share of the released total)</td><td class="num">12,772,182 (48.2%)</td><td class="num">12,079,226 (46.1%)</td></tr>
+<tr><td>Released after the addition</td><td class="num">9,512,407</td><td class="num">9,335,129</td></tr>
+<tr><td>Claimed after the addition</td><td class="num">9,045,565</td><td class="num">8,885,853</td></tr>
+<tr><td>Sent out after that</td><td class="num">11,580,858</td><td class="num">11,420,827</td></tr>
 <tr><td>Total not yet released</td><td class="num">63,042,087</td><td class="num">61,879,242</td></tr>
 </table></div>
-<p>The "sent out after a release" total is the sum of sends made at a time later than a release; it does not establish that any individual send consisted of that released amount itself. A "claim" is the procedure by which a released lockup balance is received as a spendable balance.</p>
+<p>The "sent out after that" total is the sum of sends made at a time later than a post-addition release (sends before the addition are not included). Because a send can also be paid from amounts whose lockups were released before the addition, or from a pre-existing balance, the sent total can exceed the amount released after the additions. Which balance any individual send was paid from is not identified. A "claim" is the procedure by which a released lockup balance is received as a spendable balance.</p>
 
 <h2>Discussion</h2>
 <p>The working hypothesis this study tests is the following. An attacker adds their own key to an account whose passphrase they have stolen, and raises the thresholds to lock the owner out. The owner alone can neither send nor remove the key. The attacker, combining the owner's key and the added key, can operate the account. The prize is not the balance at hand but the locked balance that cannot be moved yet, and the attacker waits for its release date.</p>
@@ -223,7 +223,7 @@ img { max-width: 100%; }
 <li><a href="https://tysseo7-meru.github.io/pi-signer-created-report/census_summary.txt">Census aggregates (census_summary.txt)</a></li>
 <li><a href="https://tysseo7-meru.github.io/pi-signer-created-report/tracking_summary.txt">Tracking aggregates (tracking_summary.txt)</a></li>
 <li><a href="https://tysseo7-meru.github.io/pi-signer-created-report/phase2c_summary.txt">Lockout (current thresholds) aggregates (phase2c_summary.txt)</a></li>
-<li><a href="https://tysseo7-meru.github.io/pi-signer-created-report/release_amounts_summary.txt">Released-Pi amount aggregates (release_amounts_summary.txt)</a></li>
+<li><a href="https://tysseo7-meru.github.io/pi-signer-created-report/release_split_summary.txt">Released-Pi amount aggregates, split before/after the addition (release_split_summary.txt)</a></li>
 <li><a href="https://tysseo7-meru.github.io/pi-signer-created-report/tracking_accounts.csv">Per-account tracking details (tracking_accounts.csv, 110,650 rows)</a></li>
 </ul>
 <div class="note">

@@ -1,0 +1,16 @@
+Release totals split by the addition time (reference 2026-11-05T04:22:50Z)
+errors: 0
+
+ALL
+  released before the addition: 17,009,912.9 Pi
+  released after the addition:  9,512,406.5 Pi
+  released total (<= REF):       26,522,319.4 Pi
+  claimed after the addition:    9,045,565.0 Pi
+  sent after a post-addition release: 11,580,858.2 Pi (121.7% of released-after)
+
+LOCKED ONLY
+  released before the addition: 16,851,912.3 Pi
+  released after the addition:  9,335,129.2 Pi
+  released total (<= REF):       26,187,041.5 Pi
+  claimed after the addition:    8,885,852.8 Pi
+  sent after a post-addition release: 11,420,827.3 Pi (122.3% of released-after)
