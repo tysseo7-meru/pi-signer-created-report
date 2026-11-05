@@ -1,0 +1,22 @@
+Release amounts - how much unlocked Pi left the 110,650 accounts (facts, not verdicts)
+reference time: 2026-11-05T04:22:50Z
+
+ALL ACCOUNTS
+  accounts: 110650 (with a past release: 71983)
+  released Pi total (release time <= REF): 26,522,319.4 Pi
+  still-locked Pi total (releases after REF): 63,042,087.1 Pi
+  claimed Pi total: 25,701,245.8 Pi
+  sent out after a release: 12,772,181.5 Pi from 18930 accounts
+  sent-after-release / released = 48.2% ; / claimed = 49.7%
+  sent after addition (any time): 12,995,342.3 Pi
+  errors: 0
+
+LOCKED-OUT ACCOUNTS ONLY (Phase 2c)
+  accounts: 107443 (with a past release: 69900)
+  released Pi total (release time <= REF): 26,187,041.5 Pi
+  still-locked Pi total (releases after REF): 61,879,242.0 Pi
+  claimed Pi total: 25,389,519.8 Pi
+  sent out after a release: 12,079,226.4 Pi from 17351 accounts
+  sent-after-release / released = 46.1% ; / claimed = 47.6%
+  sent after addition (any time): 12,301,054.8 Pi
+  errors: 0
