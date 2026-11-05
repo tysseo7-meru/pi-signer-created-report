@@ -49,44 +49,41 @@ img { max-width: 100%; }
 </head>
 <body>
 <main>
-<h1>signer_created 全件調査レポート — 鍵の追加と締め出しの検証（プロジェクトNo.3）</h1>
+<h1>signer_created 全件調査 ― 第三者に鍵を追加されたアカウントの追跡と検証（プロジェクトNo.3）</h1>
 <div class="meta">
-<p>分析：モコ（Muse）／ Muse Spark 1.3</p>
-<p>対象：Pi Network メインネット。全数調査の範囲は創世からレジャー 29,518,771（2026-11-01T09:59:30Z）まで。</p>
-<p>レポート作成：2026-11-05（全数調査・Phase 2b・2c・2d・プロジェクトNo.2確定リストとの照合までの結果）</p>
+<p>本レポートは、AIアシスタント「モコ」（モデル: Muse Spark 1.3、提供: Meta）が、Pi Network のオンチェーン記録（Horizon API が公開するエフェクト・取引の履歴）だけを用いて行った調査の記録である。推測で個人を特定するものではなく、チェーン上に残された事実の集計である。</p>
+<p>対象範囲：Pi メインネットの創世から 2026-11-01T09:59:30Z（台帳番号 29,518,771）まで。</p>
+<p>2026-11-05 改訂：本レポートは、残高の条件（送金後に残高が 2 Pi 以下になるか）を使わない構成に作り替えた。使う物差しは、鍵の追加・締め出しの状態・ロック解除と送金のタイミングの3つで、最後にプロジェクトNo.2の確定リストと照合する。</p>
 <p><a href="https://tysseo7-meru.github.io/moco-project-index/">レポート一覧へ</a></p>
 <p>初めて読む方向けの短縮版もあります：<a href="https://tysseo7-meru.github.io/pi-signer-created-report/signer_created_report_short.html">短縮版レポート</a></p>
 </div>
 
-<h2>この調査について</h2>
-<p>発端は、Pi Network のモデレーター間で共有された「アカウントに勝手に署名鍵が追加され、しきい値（後述）が引き上げられて、本人が締め出される」という主張である。本調査は、その主張をチェーン上の記録で検証するために、鍵が追加された記録（<code>signer_created</code>、エフェクトの type_i 10）の全件を数え、追加を受けたアカウントについて侵害の「兆候」を集計したものである。</p>
+<h2>調査の概要</h2>
+<p>Pi Network のモデレーターの Discord で、「自分のアカウントに知らない鍵が追加され、操作できなくなった（マルチシグ化された）」という趣旨の報告が相次いだ。これがどの程度の規模で起きているのかを、チェーンの記録から検証するのが本調査である。</p>
+<p>検証の進め方は次の通りである。まず、ネットワーク全体の記録から「鍵が追加された出来事」（signer_created）を全件集める。次に、本人の登録ではない追加（第三者による追加）を受けたアカウントを全て追跡し、(1) 追加の後に送金があったか、(2) 本人が締め出された状態になっているか、(3) ロックされた残高の解除と送金のタイミングがどう重なるか、を集計する。最後に、別の方法で作られたプロジェクトNo.2の確定リストと照合する。</p>
+<p>本調査では、残高の条件（送金後に残高が 2 Pi 以下になるかどうか）は使わない。残高の推移を履歴から組み立て直す方法は、組み立てが実際と一致するか検証できたアカウントが全体の76.5%にとどまり、読み取りも複雑だったためである。いわゆる「ほぼ全額を抜く送金だったか」という厳しい条件での裏付けは、元の方法（その条件を含む）で確定したプロジェクトNo.2のリストとの照合（第3部）が担う。</p>
 <h3>用語</h3>
-<ul>
-<li><strong>署名鍵の追加（signer_created）</strong>：アカウントに署名鍵が追加された記録。追加された鍵がアカウント自身と同一のものは、アカウント作成・移行時の本人登録であり、どのアカウントにもちょうど1回だけ現れる。2回目以降の追加は、本人以外の鍵が足されたことを意味する（ただし後述の留保がある）。</li>
-<li><strong>重み（weight）</strong>：鍵ごとのポイント。本人の元の鍵（マスターキー）の重みは通常1。</li>
-<li><strong>しきい値（threshold）</strong>：操作に必要なポイントの合計。low＝軽い設定変更、med＝送金、high＝鍵の追加・削除など鍵そのものの管理、の3段階。通常はすべて0で、本人の鍵（1点）だけで何でもできる。たとえば「1/2/2」は low=1・med=2・high=2 を表し、この場合、本人の鍵だけでは送金も鍵の削除もできない。一方、重み1の鍵がもう1つあれば 1＋1＝2点となり、両方を持つ側はすべて操作できる。</li>
-<li><strong>ロック（ロックアップ）</strong>：移行時に一定期間送金できなくなる残高。解除時刻は、エフェクト（type_i 51）の条件（rel_before 秒）から復元できる。</li>
-</ul>
+<p>signer_created（サイナー・クリエイテッド）は、ブロックチェーンの記録の種類のひとつで、「アカウントに署名用の鍵が追加された」出来事を表す。アカウントには複数の鍵を登録でき、各鍵には「重み」（点数）が付く。操作には種類ごとに「しきい値」（必要な点数）が決まっており、軽い変更用（low）、送金用（med）、鍵や設定の管理用（high）の3段階がある。たとえば本人の鍵の重みが1で送金のしきい値が2なら、本人の鍵だけでは送金できない。これを本レポートでは「締め出し」と呼ぶ。アカウントが作られるときには、本人の鍵が自動で登録され（これも signer_created として記録される）、これを「本人登録」と呼ぶ。それ以外の追加が「第三者による追加」である。移行（マイグレーション）で受け取った Pi の一部は一定期間ロックされ、期間が終わると「解除」されて使えるようになる。</p>
+<h3>実例アカウント</h3>
+<p>発端となった報告の対象アカウント <span class="addrf">GDR67Y7GIHHHSFH74SKO2KAUKB4AV5XAY4ACNLHUXV4KZCVBSXIZOJIB</span> では、2026-06-05T17:32:16Z に鍵 <span class="addrf">GBLY27C6YKMLKDYOY7UUXP5FKGTI4GTFPOSNBQOMOAZOYK5CSWYIAWAG</span>（重み1）が追加され、同じ取引の中でしきい値が low 1 / med 2 / high 2 に引き上げられた。本人の鍵（重み1）だけでは送金も設定変更もできない形である。このアカウントの本人登録は 2024-01-06 にあり、追加はそれとは別の出来事だった。追加に使われたこの鍵は、プロジェクトNo.2の確定リストにも現れる（第3部）。</p>
 <div class="note">
-<p>本レポートの数値はすべて侵害の「兆候」の集計であり、盗難の断定ではない。また、第三者の鍵の追加それ自体も侵害の証明にはならない。Pi の Developer Portal でメインネットアプリを作成する際、提供された署名鍵（マルチシグ）を追加する正規の手続きが存在したためである。個々のアカウントの事情はチェーン外の情報なしには判断できない。</p>
+<p>注意：第三者による鍵の追加それ自体は、侵害の証明ではない。たとえば Pi の開発者ポータルでメインネットのアプリを作成する際には、指定された鍵を追加する手順が通常の作業として存在したことが確認されている。本レポートは出来事の集計（兆候）を示すものであり、個別のアカウントについて侵害があったかどうかを断定するものではない。</p>
 </div>
-<h3>きっかけとなった実例</h3>
-<p>アカウント <span class="addrf">GDR67Y7GIHHHSFH74SKO2KAUKB4AV5XAY4ACNLHUXV4KZCVBSXIZOJIB</span> では、2026-06-05T17:32:16Z に鍵 <span class="addrf">GBLY27C6YKMLKDYOY7UUXP5FKGTI4GTFPOSNBQOMOAZOYK5CSWYIAWAG</span>（重み1）が追加され、同じ取引の中でしきい値が 1/2/2 に引き上げられた（本人登録は2024-01-06）。本人の鍵（重み1）だけでは med・high の2点に届かず、送金も鍵の削除もできない形である。この鍵は、後の第5部の照合でも再び現れる。</p>
 
 <h2>要約</h2>
 <div class="tw"><table>
-<tr><th>段階</th><th>内容</th><th>主な結果</th></tr>
-<tr><td>全数調査</td><td>signer_created 全件の集計</td><td>第三者による追加は 128,871 件（110,650 アカウント）。その大半が 2026-06-05 の1日に集中し、同日 19:47:14Z を最後に、範囲末尾まで0件</td></tr>
-<tr><td>Phase 2b</td><td>110,650 アカウントの兆候集計</td><td>追加後に残高2 Pi以下まで送金されたアカウント 9,771 件。追加された鍵は 110,622 件で今も残存</td></tr>
-<tr><td>Phase 2c</td><td>現在の設定の取り直し</td><td>厳密な締め出し（本人の鍵だけで送金も鍵管理も不可）107,443 件＝97.1%</td></tr>
-<tr><td>Phase 2d</td><td>ロック解除時刻と送金の突き合わせ</td><td>解除後に流出したアカウント 8,785 件。うち解除から3分未満が 4,929 件（56.1%）。未解除は 37,585 件（34.0%）</td></tr>
-<tr><td>No.2との照合</td><td>使い回し追加鍵 × エンクローズド期間の確定リスト</td><td>6件の鍵が確定リストに一致。中心の1アドレスは「追加鍵」「流出先」「確定リスト」の3役を兼ねる</td></tr>
+<tr><th>区分</th><th>結果</th></tr>
+<tr><td>全件調査</td><td>signer_created は 18,444,110 件。第三者による追加は 128,871 件（110,650 アカウント）で、その 99.8% が 2026-06-05 の1日に集中し、同日を最後に範囲末尾まで 0 件だった</td></tr>
+<tr><td>追跡：追加後の送金</td><td>追加を受けた 110,650 アカウントのうち、追加後に送金があったのは 21,201 件（19.2%）。大半は追加から7日以上たってからの送金だった</td></tr>
+<tr><td>追跡：締め出し</td><td>現在も締め出し状態にあるのは 107,443 件（97.1%）。追加された鍵は 110,622 件のアカウントに今も残り、削除されたのは 28 件だけだった</td></tr>
+<tr><td>追跡：解除と送金</td><td>ロックが解除された後に送金があったのは 18,930 件。その 56.0% にあたる 10,594 件は、直前の解除から3分未満の送金だった。解除後に送金したアカウントのうち 17,351 件は締め出し状態で、本人の鍵だけでは送金できないはずのアカウントからの送金である</td></tr>
+<tr><td>プロジェクトNo.2との照合</td><td>追加に使われた鍵のうち 6 件が、ほぼ全額を抜く送金など元の厳しい条件で確定した No.2 のリスト（1,980 件）に含まれる。追跡対象のアカウント自体も 23 件が同リストに含まれる</td></tr>
 </table></div>
 
-<h2>第1部 全数調査</h2>
-<p>Horizon の全エフェクトを創世から走査し、<code>signer_created</code> を全件抽出した（HTTP 429 は0件）。</p>
+<h2>第1部　signer_created の全件調査</h2>
+<p>Horizon の全エフェクト（チェーン上の変化の記録）を創世から対象範囲の末尾まで走査し、タイプ番号10（signer_created）を全件抽出した。</p>
 <div class="tw"><table>
-<tr><th>項目</th><th class="num">件数</th></tr>
+<tr><th>項目</th><th>件数</th></tr>
 <tr><td>走査したエフェクト総数</td><td class="num">398,948,176</td></tr>
 <tr><td>signer_created の総数</td><td class="num">18,444,110</td></tr>
 <tr><td>signer_created を持つアカウント</td><td class="num">18,315,239</td></tr>
@@ -96,21 +93,31 @@ img { max-width: 100%; }
 </table></div>
 <p>イベント数（128,871件）がアカウント数（110,650件）より多いのは、同じアカウントに複数回追加されたケースがあるためである。差の 18,221 件は2回目以降の追加で、2回以上の追加を受けたアカウントは 17,073 件ある。</p>
 <h3>第三者による追加の時期</h3>
-<p>第三者による追加は、年別では 2023年が2件、2025年が10件、2026年が128,859件と、2026年6月に極端に集中している。2026年6月の内訳は、06-01 が1件、06-03 が16件、06-04 が184件、<strong>06-05 が128,653件</strong>。最後の追加は 2026-06-05T19:47:14Z で、<strong>06-06 から範囲末尾（2026-11-01）までの149日間は0件</strong>だった（本人登録はその後も続いている）。これは「6月5日を境に追加ができなくなった」という見方と整合するが、それだけでは証明にはならない。6月以前の平常時もほぼ0件だったためである。</p>
+<p>第三者による追加は 128,871 件（110,650 アカウント）。その大半が 2026-06-05 の1日に集中し、同日 19:47:14Z を最後に、範囲末尾まで0件だった。それ以前の件数はごくわずかで、2026年6月より前の累計でも17件しかない。</p>
+<h3>第三者による追加の日別件数</h3>
+<div class="tw"><table>
+<tr><th>日付</th><th>件数</th></tr>
+<tr><td>2026-06-01</td><td class="num">1</td></tr>
+<tr><td>2026-06-03</td><td class="num">16</td></tr>
+<tr><td>2026-06-04</td><td class="num">184</td></tr>
+<tr><td>2026-06-05</td><td class="num">128,653</td></tr>
+<tr><td>その他（2023年2件・2025年10件・2026年6月以外5件）</td><td class="num">17</td></tr>
+</table></div>
 <h3>アカウントごとのイベント数</h3>
 <div class="tw"><table>
-<tr><th>signer_created の回数</th><th class="num">アカウント数</th></tr>
-<tr><td>1回（本人登録のみ）</td><td class="num">18,204,589</td></tr>
+<tr><th>signer_created の回数</th><th>アカウント数</th></tr>
+<tr><td>1回</td><td class="num">18,204,589</td></tr>
 <tr><td>2回</td><td class="num">93,577</td></tr>
 <tr><td>3回</td><td class="num">16,186</td></tr>
 <tr><td>4回</td><td class="num">633</td></tr>
 <tr><td>5回</td><td class="num">247</td></tr>
 <tr><td>6回</td><td class="num">7</td></tr>
 </table></div>
-<h3>使い回された追加鍵</h3>
+<p>どのアカウントにも、本人登録はちょうど1回だけあった（本人登録が2回以上あるアカウントは0件）。したがって、イベントが2回以上あるアカウントは、第三者による追加を少なくとも1回受けたアカウントであり、それが 110,650 件である。第2部ではこの全件を追跡する。</p>
+<h3>繰り返し使われた鍵</h3>
 <p>複数のアカウントに追加された鍵は 2,832 件ある。追加された鍵の重みは、128,871件中 126,921件（98.5%）が1だった。上位の鍵はいずれも 2026-06-05 の数時間に集中し、活動の窓が重なって同時に止まっている。とくに上位2鍵（GCQX4C2R… と GAMHW4DH…）は、GAMHW4DH… が追加された 7,938 件すべてでペアとして同時に追加されていた。単一の組織的な作業が、鍵のプールを共有して行われた姿と整合する（チェーンの記録だけでは、実行者が1組か、同じ道具を使う複数組かは区別できない）。</p>
 <div class="tw"><table>
-<tr><th>#</th><th>追加鍵</th><th class="num">追加先アカウント数</th><th>2026-06-05 の活動窓（UTC）</th></tr>
+<tr><th>#</th><th>追加された鍵</th><th>アカウント数</th><th>活動の窓（2026-06-05、UTC）</th></tr>
 <tr><td class="num">1</td><td><span class="addr">GCSOLUCB46LIUPHBIWUA3ACO4J4BKJZHICDM7BQ7ZHNLSHLQGNVNI5K6</span></td><td class="num">17,331</td><td>13:30:59 – 19:46:06</td></tr>
 <tr><td class="num">2</td><td><span class="addr">GCQX4C2RXKER767BBQVMX3YMCJFFHMFTVJ536Z2NKVT6CC32LWZBPMUG</span></td><td class="num">7,939</td><td>14:55:40 – 19:44:58</td></tr>
 <tr><td class="num">3</td><td><span class="addr">GAMHW4DHYJSXQJLSVTJHIXN64JP6MPT2N66EUMIEZWG5JJSEY42IRWDE</span></td><td class="num">7,938</td><td>15:05:50 – 19:44:58</td></tr>
@@ -120,56 +127,45 @@ img { max-width: 100%; }
 <tr><td class="num">7</td><td><span class="addr">GAB3DZLFXTDBLQPGDGCQIH7EGXSGS3AZWR43S37OXEAG3GU3AYHY6NRI</span></td><td class="num">770</td><td>09:27:55 – 19:40:01</td></tr>
 </table></div>
 
-<h2>第2部 Phase 2b — 追加後の兆候集計</h2>
-<p>対象は、第三者による追加を受けた 110,650 アカウント全件。各アカウントの履歴（エフェクト・操作・取引）を取得し、兆候を集計した。残高の再現値が現在残高と 0.1 Pi 以内で一致したアカウントは 84,671 件（76.5%）で、以下の表では全体とこのSubsetの両方を示す。</p>
+<h2>第2部　追加を受けたアカウントの追跡</h2>
+<p>対象は、第三者による追加を受けた 110,650 アカウント全件。各アカウントの履歴と現在の鍵・しきい値の構成を取得し、追加後の動きを集計した。本調査は残高の条件を使わないため、対象の全件をそのまま集計できる。</p>
+<h3>(1) 追加後の送金</h3>
 <div class="tw"><table>
-<tr><th>兆候</th><th class="num">全体</th><th class="num">残高再現が信頼できるもののみ</th></tr>
-<tr><td>追加後に、残高2 Pi以下になる送金があった</td><td class="num">9,771</td><td class="num">8,896</td></tr>
-<tr><td>全期間で、残高2 Pi以下になる送金があった</td><td class="num">79,740</td><td class="num">61,910</td></tr>
-<tr><td>追加と同じ取引でしきい値・本人の重みの変更があった（※第3部参照）</td><td class="num">42,469</td><td class="num">27,528</td></tr>
-<tr><td>追加後に送金があった</td><td class="num">21,201</td><td class="num">13,108</td></tr>
-<tr><td>追加後に一度も送金がない</td><td class="num">89,449</td><td class="num">—</td></tr>
-<tr><td>追加された鍵が今も残っている</td><td class="num">110,622</td><td class="num">84,652</td></tr>
-<tr><td>追加された鍵が後に削除された</td><td class="num">28</td><td class="num">19</td></tr>
+<tr><th>区分</th><th>アカウント数</th><th>割合</th></tr>
+<tr><td>追加後に送金があった</td><td class="num">21,201</td><td class="num">19.2%</td></tr>
+<tr><td>追加後に送金がない</td><td class="num">89,449</td><td class="num">80.8%</td></tr>
 </table></div>
-<h3>残高から見えること</h3>
-<p>追加時点の残高は中央値 1.62 Pi で、79,911 件（72.2%）は2 Pi未満、1,000 Pi以上あったのは 20 件だけだった。つまり追加の時点では、ほとんどのアカウントに目ぼしい流動残高はなかった。一方、流出が起きた 9,771 件の初回送金の合計は約 3,580,242 Pi（中央値 117.3 Pi）に上る。追加後に初めて送金した 21,201 件のうち 17,392 件（82%）は、初回送金の時点で残高が追加時点より1 Pi超増えていた（流出組では 7,010 件）。<strong>流出した資金の大部分は、追加の後にアカウントへ入ったもの</strong>であり、その大半はロック解除による入金とみられる（第4部で直接突き合わせる）。</p>
-<h3>追加から初回送金までの間隔（流出組 9,771 件）</h3>
+<p>追加から最初の送金までの間隔は、次の通りである。</p>
 <div class="tw"><table>
-<tr><th>間隔</th><th class="num">件数</th></tr>
-<tr><td>1時間未満</td><td class="num">166</td></tr>
-<tr><td>1時間〜1日未満</td><td class="num">47</td></tr>
-<tr><td>1日〜7日未満</td><td class="num">262</td></tr>
-<tr><td>7日以上</td><td class="num">9,296</td></tr>
+<tr><th>追加から初回の送金まで</th><th>アカウント数</th></tr>
+<tr><td>1時間未満</td><td class="num">591</td></tr>
+<tr><td>1時間以上1日未満</td><td class="num">363</td></tr>
+<tr><td>1日以上7日未満</td><td class="num">901</td></tr>
+<tr><td>7日以上</td><td class="num">19,346</td></tr>
 </table></div>
-<p>流出の多くは追加から長く時間が経ってから起きている。「追加の直後」ではなく「解除の直後」が問題になる、という見立てにつながる。</p>
-<h3>初回送金の送金先（流出組、上位10件）</h3>
+<p>送金の大半（91.3%）は追加から7日以上たってから起きている。追加の直後に資金が動いたのではなく、時間を置いてから動いている。この「時間を置く」先にあるのがロックの解除であり、次の (3) で対応を見る。追加後の初回送金の主な送り先は次の通りである。</p>
 <div class="tw"><table>
-<tr><th>#</th><th>送金先</th><th class="num">アカウント数</th><th>ラベル</th></tr>
-<tr><td class="num">1</td><td><span class="addr">GDXZUYU7KF5QATLXEBIRZJ4NWKNYP3OFRNQVL2AUSQ2EUDD2XJA54JTQ</span></td><td class="num">2,069</td><td>不明</td></tr>
-<tr><td class="num">2</td><td><span class="addr">GBXHS6NJONBIDPXRQ4T7ZHUAR3U2MFQBDNL267O7DXVP5UBZ2FWUX7YD</span></td><td class="num">1,558</td><td>不明</td></tr>
-<tr><td class="num">3</td><td><span class="addr">GDTU5EXYXD3XIGLM6MYVQ5MEO5V7BYQGH6FCMPY4232XQJU6G273RXYJ</span></td><td class="num">865</td><td>不明</td></tr>
-<tr><td class="num">4</td><td><span class="addr">GBC6NRTTQLRCABQHIR5J4R4YDJWFWRAO4ZRQIM2SVI5GSIZ2HZ42RINW</span></td><td class="num">680</td><td>Gate.io 関連（第三者ラベル）</td></tr>
-<tr><td class="num">5</td><td><span class="addr">GDPBE5RXPAHDFQD3YPVYKXWENYYRPSOM6O3D2KPHH4L4C3VGDBDX6XVX</span></td><td class="num">524</td><td>不明</td></tr>
-<tr><td class="num">6</td><td><span class="addr">GALYJFJ5SVD45FBWN2GT4IW67SEZ3IBOFSBSPUFCWV427NBNLG3PXEQU</span></td><td class="num">292</td><td>OKX（第三者ラベル）</td></tr>
-<tr><td class="num">7</td><td><span class="addr">GDFNWH6ZFJVHJDLBMNOUT35X4EEKQVJAO3ZDL4NL7VQJLC4PJOQFWJ75</span></td><td class="num">221</td><td>Bitget（第三者ラベル）</td></tr>
-<tr><td class="num">8</td><td><span class="addr">GAA7EFSR2WFYOLG2SCIIEHYYVV4R6AY65Z4IXOHCNOATTJB32G55GHAY</span></td><td class="num">169</td><td>不明</td></tr>
-<tr><td class="num">9</td><td><span class="addr">GATOC5LCD5PVVG4IDCRRURWJMN3R7RLEUJMGAYMA5DGIJP2D46HAXCMA</span></td><td class="num">152</td><td>不明</td></tr>
-<tr><td class="num">10</td><td><span class="addr">GD6YU5BKJG5YJ4SZDK6FQGR6BTYSJYIQ2U6DUJSJLWWYUEKBKHPZIE6P</span></td><td class="num">128</td><td>不明</td></tr>
+<tr><th>#</th><th>送り先</th><th>アカウント数</th><th>備考</th></tr>
+<tr><td class="num">1</td><td><span class="addr">GBXHS6NJONBIDPXRQ4T7ZHUAR3U2MFQBDNL267O7DXVP5UBZ2FWUX7YD</span></td><td class="num">4,745</td><td>不明</td></tr>
+<tr><td class="num">2</td><td><span class="addr">GDXZUYU7KF5QATLXEBIRZJ4NWKNYP3OFRNQVL2AUSQ2EUDD2XJA54JTQ</span></td><td class="num">2,165</td><td>プロジェクトNo.2の確定リストに含まれる</td></tr>
+<tr><td class="num">3</td><td><span class="addr">GBJL3O3CAYOPSEZBGK3RQMOIOST24FBMSJ4EY4NWRJTMO5ZOAACFPCP7</span></td><td class="num">1,408</td><td>不明</td></tr>
+<tr><td class="num">4</td><td><span class="addr">GD3ZGYRWX456BPKJ7O2MHA3NS32HWU66OPED2AUCUTNOYHROCLHD4BPS</span></td><td class="num">1,236</td><td>不明</td></tr>
+<tr><td class="num">5</td><td><span class="addr">GDTU5EXYXD3XIGLM6MYVQ5MEO5V7BYQGH6FCMPY4232XQJU6G273RXYJ</span></td><td class="num">1,009</td><td>不明</td></tr>
+<tr><td class="num">6</td><td><span class="addr">GBC6NRTTQLRCABQHIR5J4R4YDJWFWRAO4ZRQIM2SVI5GSIZ2HZ42RINW</span></td><td class="num">851</td><td>プロジェクトNo.2の確定リストに含まれる</td></tr>
+<tr><td class="num">7</td><td><span class="addr">GALYJFJ5SVD45FBWN2GT4IW67SEZ3IBOFSBSPUFCWV427NBNLG3PXEQU</span></td><td class="num">794</td><td>プロジェクトNo.2の確定リストに含まれる</td></tr>
+<tr><td class="num">8</td><td><span class="addr">GACWXNWHYA4UBUJBLTOBMSVNGVK33M4LQACQAGECPSCMWKCJFAJ62IDV</span></td><td class="num">783</td><td>不明</td></tr>
+<tr><td class="num">9</td><td><span class="addr">GDPBE5RXPAHDFQD3YPVYKXWENYYRPSOM6O3D2KPHH4L4C3VGDBDX6XVX</span></td><td class="num">681</td><td>不明</td></tr>
+<tr><td class="num">10</td><td><span class="addr">GC53WQPQRKMF6ZEYMCTFHJ44767GECXEWL6TXTYVEBDSOXOGH5TTVAND</span></td><td class="num">530</td><td>不明</td></tr>
 </table></div>
-<p class="small">取引所のラベルは第三者の調査報告・報道に基づくもので、公式な発表ではない。流出額には通常の売却等が混ざる可能性があり、全額が不正な資金とは限らない。</p>
-
-<h2>第3部 Phase 2c — 現在の設定の取り直し</h2>
-<p>Phase 2b の「追加と同じ取引でしきい値変更があった」は 42,469 件だったが、これは同じ取引内の変更だけを数えたもので、別取引で引き上げられた分を含まない。そこで 110,650 件全件について、現在のしきい値・鍵の構成を取り直した（2026-11-05、エラー0件、存在しないアカウント0件）。</p>
+<h3>(2) 締め出しの実態</h3>
+<p>追加と同じ取引の中でしきい値の引き上げがあったのは 42,469 件だった。ただしこれは同じ取引内の変更だけを数えたもので、別の取引で引き上げられた分を含まない。そこで全件について、現在のしきい値と鍵の構成を取り直した（2026-11-04〜05、エラー0件、存在しないアカウント0件）。現在の姿は次の通りである。</p>
 <div class="tw"><table>
-<tr><th>項目</th><th class="num">件数</th><th class="num">割合</th></tr>
-<tr><td>厳密な締め出し（本人の鍵の重みが med・high の両方未満＝本人の鍵だけで送金も鍵管理も不可）</td><td class="num">107,443</td><td class="num">97.1%</td></tr>
-<tr><td>締め出しではない</td><td class="num">3,207</td><td class="num">2.9%</td></tr>
-<tr><td>追加された鍵が今も残っている</td><td class="num">110,622</td><td class="num">100.0%</td></tr>
+<tr><th>区分</th><th>アカウント数</th><th>割合</th></tr>
+<tr><td>締め出し状態（本人の鍵の重みが、送金としきい値管理の両方のしきい値に届かない）</td><td class="num">107,443</td><td class="num">97.1%</td></tr>
+<tr><td>締め出し状態でない</td><td class="num">3,207</td><td class="num">2.9%</td></tr>
 </table></div>
-<h3>しきい値の型（low/med/high）</h3>
 <div class="tw"><table>
-<tr><th>型</th><th class="num">件数</th><th class="num">割合</th></tr>
+<tr><th>しきい値の型（low/med/high）</th><th>アカウント数</th><th>割合</th></tr>
 <tr><td>2/2/2</td><td class="num">87,630</td><td class="num">79.2%</td></tr>
 <tr><td>1/2/2</td><td class="num">17,455</td><td class="num">15.8%</td></tr>
 <tr><td>0/0/0</td><td class="num">2,482</td><td class="num">2.2%</td></tr>
@@ -178,39 +174,53 @@ img { max-width: 100%; }
 <tr><td>1/0/1</td><td class="num">679</td><td class="num">0.6%</td></tr>
 <tr><td>その他</td><td class="num">495</td><td class="num">0.4%</td></tr>
 </table></div>
-<p>本人の鍵の重みは、1 が 109,529 件、0（本人の鍵が0点にされた、より重い締め出し）が 1,117 件だった。Phase 2b の保存データから数え直した値（107,444件）との差は1件で、その1件はしきい値 2/2 に対して本人の鍵の重みが2あり、本人が単独で操作できるものであった。すなわち、<strong>追加を受けたアカウントの97.1%は、現在の設定のままでは本人の鍵だけでは立て直せない</strong>。</p>
-
-<h2>第4部 Phase 2d — ロック解除時刻との突き合わせ</h2>
-<p>各アカウントについて、エフェクト（type_i 51）の条件からロック解除時刻を復元し、追加後の送金と突き合わせた。分類は次の4つである：解除後に残高2 Pi以下まで送金された（流出）／解除済みだがその形の送金はない（無事）／まだ解除が来ていない（未解除）／ロックの記録がない。</p>
+<p>本人の鍵の重みは、1 のアカウントが 109,529 件、0（本人の鍵では何もできない）が 1,117 件、2以上が 4 件だった。追加された鍵は 110,622 件のアカウントに今も残っており、後から削除されたのは 28 件だけである。</p>
+<p>締め出されたアカウントは、本人の操作では設定を変えられないため、この姿は時間がたってもほぼ変わらない。実際、追跡調査の際に保存した設定値から数え直した結果とも、鍵の残存 110,622 件を含めて一致した。</p>
+<h3>(3) ロックの解除と送金のタイミング</h3>
+<p>各アカウントのロック解除の時刻は、エフェクト（タイプ51）の請求条件に記録された期間から復元した（プロジェクトNo.2と同じ方法）。判定の基準時刻は 2026-11-05T04:22:50Z である。</p>
 <div class="tw"><table>
-<tr><th>分類</th><th class="num">全体</th><th class="num">割合</th><th class="num">残高再現が信頼できるもののみ</th><th class="num">割合</th></tr>
-<tr><td>解除後に流出</td><td class="num">8,785</td><td class="num">7.9%</td><td class="num">8,085</td><td class="num">9.5%</td></tr>
-<tr><td>解除済みだが無事</td><td class="num">63,198</td><td class="num">57.1%</td><td class="num">47,536</td><td class="num">56.1%</td></tr>
-<tr><td>未解除</td><td class="num">37,585</td><td class="num">34.0%</td><td class="num">28,748</td><td class="num">34.0%</td></tr>
-<tr><td>ロックの記録なし</td><td class="num">1,082</td><td class="num">1.0%</td><td class="num">302</td><td class="num">0.4%</td></tr>
+<tr><th>区分</th><th>アカウント数</th><th>割合</th></tr>
+<tr><td>解除された後に送金があった</td><td class="num">18,930</td><td class="num">17.1%</td></tr>
+<tr><td>解除されたが、その後の送金はない</td><td class="num">53,053</td><td class="num">47.9%</td></tr>
+<tr><td>まだ解除されていない</td><td class="num">37,585</td><td class="num">34.0%</td></tr>
+<tr><td>ロックの記録が見つからない</td><td class="num">1,082</td><td class="num">1.0%</td></tr>
 </table></div>
-<h3>解除から初回流出までの間隔（流出組 8,785 件）</h3>
+<p>「解除された後に送金があった」18,930 件について、直前の解除から初回の送金までの間隔は次の通りである。過半数が3分未満に集中している。</p>
 <div class="tw"><table>
-<tr><th>間隔</th><th class="num">件数</th><th class="num">流出組に占める割合</th></tr>
-<tr><td>3分未満</td><td class="num">4,929</td><td class="num">56.1%</td></tr>
-<tr><td>3分〜1時間未満</td><td class="num">75</td><td class="num">0.9%</td></tr>
-<tr><td>1時間〜1日未満</td><td class="num">319</td><td class="num">3.6%</td></tr>
-<tr><td>1日〜7日未満</td><td class="num">813</td><td class="num">9.3%</td></tr>
-<tr><td>7日以上</td><td class="num">2,649</td><td class="num">30.2%</td></tr>
+<tr><th>直前の解除から初回の送金まで</th><th>アカウント数</th><th>割合</th></tr>
+<tr><td>3分未満</td><td class="num">10,594</td><td class="num">56.0%</td></tr>
+<tr><td>3分以上1時間未満</td><td class="num">241</td><td class="num">1.3%</td></tr>
+<tr><td>1時間以上1日未満</td><td class="num">803</td><td class="num">4.2%</td></tr>
+<tr><td>1日以上7日未満</td><td class="num">1,493</td><td class="num">7.9%</td></tr>
+<tr><td>7日以上</td><td class="num">5,799</td><td class="num">30.6%</td></tr>
 </table></div>
-<p>流出の過半数は解除から3分未満に起きており、3分〜1時間の層は薄い。「解除の瞬間に張り付いた送金」と「ずっと後の送金」に分かれる形である。なお、流出 8,785 件は全件が Phase 2b の「追加後に流出」9,771 件に含まれ、その差の主な部分（956件）は、解除と結びつかない流出（手元の資金側の流出）だった。</p>
-<h3>締め出し状態との対応</h3>
+<p>ここに (2) の締め出しを重ねると、構図がはっきりする。</p>
 <div class="tw"><table>
-<tr><th>分類</th><th class="num">締め出し</th><th class="num">締め出しでない</th></tr>
-<tr><td>解除後に流出</td><td class="num">7,404</td><td class="num">1,381</td></tr>
-<tr><td>解除済みだが無事</td><td class="num">62,496</td><td class="num">702</td></tr>
-<tr><td>未解除</td><td class="num">36,461</td><td class="num">1,124</td></tr>
-<tr><td>ロックの記録なし</td><td class="num">1,082</td><td class="num">0</td></tr>
+<tr><th>区分</th><th>締め出し状態</th><th>締め出し状態でない</th></tr>
+<tr><td>解除された後に送金があった</td><td class="num">17,351</td><td class="num">1,579</td></tr>
+<tr><td>解除されたが、その後の送金はない</td><td class="num">52,549</td><td class="num">504</td></tr>
+<tr><td>まだ解除されていない</td><td class="num">36,461</td><td class="num">1,124</td></tr>
+<tr><td>ロックの記録が見つからない</td><td class="num">1,082</td><td class="num">0</td></tr>
 </table></div>
-<p>締め出されていない 3,207 件の中では 1,381 件（43%）で流出が起きており、締め出し組より割合が高い。本人の鍵だけで送金できる状態では、本人の通常の利用と流出の区別がつきにくい点に注意がいる。</p>
-<h3>未解除アカウントの次の解除時期（上位）</h3>
+<p>締め出し状態のアカウントは、本人の鍵だけでは送金そのものができない。したがって「締め出し状態であり、解除された後に送金があった」17,351 件の送金は、少なくとも追加された鍵の関与なしには起きない動きである。そのうち解除から3分未満の送金は 10,426 件あった。反対に、締め出し状態でない 1,579 件の送金には、本人が自分で操作したものが含まれうるため、本レポートでは常に区別して数える。</p>
+<p>解除後の初回送金の主な送り先は次の通りで、(1) の一覧と顔ぶれが重なる。</p>
 <div class="tw"><table>
-<tr><th>月</th><th class="num">件数</th></tr>
+<tr><th>#</th><th>送り先</th><th>アカウント数</th><th>備考</th></tr>
+<tr><td class="num">1</td><td><span class="addr">GBXHS6NJONBIDPXRQ4T7ZHUAR3U2MFQBDNL267O7DXVP5UBZ2FWUX7YD</span></td><td class="num">4,806</td><td>不明</td></tr>
+<tr><td class="num">2</td><td><span class="addr">GDXZUYU7KF5QATLXEBIRZJ4NWKNYP3OFRNQVL2AUSQ2EUDD2XJA54JTQ</span></td><td class="num">2,547</td><td>プロジェクトNo.2の確定リストに含まれる</td></tr>
+<tr><td class="num">3</td><td><span class="addr">GDTU5EXYXD3XIGLM6MYVQ5MEO5V7BYQGH6FCMPY4232XQJU6G273RXYJ</span></td><td class="num">1,020</td><td>不明</td></tr>
+<tr><td class="num">4</td><td><span class="addr">GD3ZGYRWX456BPKJ7O2MHA3NS32HWU66OPED2AUCUTNOYHROCLHD4BPS</span></td><td class="num">828</td><td>不明</td></tr>
+<tr><td class="num">5</td><td><span class="addr">GACWXNWHYA4UBUJBLTOBMSVNGVK33M4LQACQAGECPSCMWKCJFAJ62IDV</span></td><td class="num">784</td><td>不明</td></tr>
+<tr><td class="num">6</td><td><span class="addr">GBC6NRTTQLRCABQHIR5J4R4YDJWFWRAO4ZRQIM2SVI5GSIZ2HZ42RINW</span></td><td class="num">781</td><td>プロジェクトNo.2の確定リストに含まれる</td></tr>
+<tr><td class="num">7</td><td><span class="addr">GBJL3O3CAYOPSEZBGK3RQMOIOST24FBMSJ4EY4NWRJTMO5ZOAACFPCP7</span></td><td class="num">705</td><td>不明</td></tr>
+<tr><td class="num">8</td><td><span class="addr">GDPBE5RXPAHDFQD3YPVYKXWENYYRPSOM6O3D2KPHH4L4C3VGDBDX6XVX</span></td><td class="num">704</td><td>不明</td></tr>
+<tr><td class="num">9</td><td><span class="addr">GALYJFJ5SVD45FBWN2GT4IW67SEZ3IBOFSBSPUFCWV427NBNLG3PXEQU</span></td><td class="num">626</td><td>プロジェクトNo.2の確定リストに含まれる</td></tr>
+<tr><td class="num">10</td><td><span class="addr">GD24QVE4R42E4XRDF6T5IN6UAQLD2WN7OQGUC2FBHFUUZM7GLE4KG6YA</span></td><td class="num">489</td><td>不明</td></tr>
+</table></div>
+<h3>未解除アカウントの次の解除時期</h3>
+<p>「まだ解除されていない」37,585 件のうち、締め出し状態のものは 36,461 件ある。次の解除は 2027年後半から2028年前半に集中している。</p>
+<div class="tw"><table>
+<tr><th>次の解除の月</th><th>アカウント数</th></tr>
 <tr><td>2027-12</td><td class="num">3,923</td></tr>
 <tr><td>2027-10</td><td class="num">2,943</td></tr>
 <tr><td>2027-11</td><td class="num">2,791</td></tr>
@@ -220,26 +230,13 @@ img { max-width: 100%; }
 <tr><td>2028-06</td><td class="num">1,823</td></tr>
 <tr><td>2027-03</td><td class="num">1,612</td></tr>
 </table></div>
-<p>未解除の 37,585 件は、解除が 2027年後半から2028年に集中している。「締め出して解除を待つ」見立てが正しければ、この層の決定的な瞬間はまだ先にある。</p>
-<h3>初回流出の送金先（流出組、上位10件）</h3>
-<div class="tw"><table>
-<tr><th>#</th><th>送金先</th><th class="num">アカウント数</th><th>ラベル</th></tr>
-<tr><td class="num">1</td><td><span class="addr">GDXZUYU7KF5QATLXEBIRZJ4NWKNYP3OFRNQVL2AUSQ2EUDD2XJA54JTQ</span></td><td class="num">2,061</td><td>不明</td></tr>
-<tr><td class="num">2</td><td><span class="addr">GBXHS6NJONBIDPXRQ4T7ZHUAR3U2MFQBDNL267O7DXVP5UBZ2FWUX7YD</span></td><td class="num">1,558</td><td>不明</td></tr>
-<tr><td class="num">3</td><td><span class="addr">GDTU5EXYXD3XIGLM6MYVQ5MEO5V7BYQGH6FCMPY4232XQJU6G273RXYJ</span></td><td class="num">880</td><td>不明</td></tr>
-<tr><td class="num">4</td><td><span class="addr">GBC6NRTTQLRCABQHIR5J4R4YDJWFWRAO4ZRQIM2SVI5GSIZ2HZ42RINW</span></td><td class="num">646</td><td>Gate.io 関連（第三者ラベル）</td></tr>
-<tr><td class="num">5</td><td><span class="addr">GDPBE5RXPAHDFQD3YPVYKXWENYYRPSOM6O3D2KPHH4L4C3VGDBDX6XVX</span></td><td class="num">529</td><td>不明</td></tr>
-<tr><td class="num">6</td><td><span class="addr">GALYJFJ5SVD45FBWN2GT4IW67SEZ3IBOFSBSPUFCWV427NBNLG3PXEQU</span></td><td class="num">253</td><td>OKX（第三者ラベル）</td></tr>
-<tr><td class="num">7</td><td><span class="addr">GDFNWH6ZFJVHJDLBMNOUT35X4EEKQVJAO3ZDL4NL7VQJLC4PJOQFWJ75</span></td><td class="num">190</td><td>Bitget（第三者ラベル）</td></tr>
-<tr><td class="num">8</td><td><span class="addr">GAA7EFSR2WFYOLG2SCIIEHYYVV4R6AY65Z4IXOHCNOATTJB32G55GHAY</span></td><td class="num">169</td><td>不明</td></tr>
-<tr><td class="num">9</td><td><span class="addr">GATOC5LCD5PVVG4IDCRRURWJMN3R7RLEUJMGAYMA5DGIJP2D46HAXCMA</span></td><td class="num">152</td><td>不明</td></tr>
-<tr><td class="num">10</td><td><span class="addr">GD6YU5BKJG5YJ4SZDK6FQGR6BTYSJYIQ2U6DUJSJLWWYUEKBKHPZIE6P</span></td><td class="num">128</td><td>不明</td></tr>
-</table></div>
 
-<h2>第5部 プロジェクトNo.2確定リストとの照合</h2>
-<p>プロジェクトNo.2（エンクローズド期間の疑惑アドレス再構築）で確定したリスト 1,980 件と、使い回された追加鍵 2,832 件を突き合わせた。暫定リスト（107,705件）の段階では88件が重なっていたが、確定条件を通した最終結果では <strong>6件</strong> が残った。6件の鍵が追加されたアカウントは合計 4,988 件である。</p>
+<h2>第3部　プロジェクトNo.2の確定リストとの照合</h2>
+<p>プロジェクトNo.2は、囲い込み期間（Enclosed Mainnet）について元の方法を適用し、疑わしいアドレス 1,980 件を確定した。その方法は、1,000 Pi 以上の大きな送金、送る側に受け取りの履歴がないこと、送金後に残高が 2 Pi 以下になること、ロック解除から3分未満の送金であること、という条件の組み合わせであり、本レポートが使わない残高の条件も含む。厳しい条件で確定したリストと、本調査の鍵・アカウントがどう重なるかを見る。</p>
+<h3>鍵の照合</h3>
+<p>第三者による追加に使われた鍵のうち、次の 6 件が No.2 の確定リストに含まれていた。6件あわせて 4,988 件のアカウントに追加された鍵である。</p>
 <div class="tw"><table>
-<tr><th>#</th><th>追加鍵</th><th class="num">追加先アカウント数</th><th>No.1のリスト（8,132件）</th></tr>
+<tr><th>#</th><th>追加された鍵</th><th>追加されたアカウント数</th><th>No.1のリスト（8,132件）</th></tr>
 <tr><td class="num">1</td><td><span class="addr">GDXZUYU7KF5QATLXEBIRZJ4NWKNYP3OFRNQVL2AUSQ2EUDD2XJA54JTQ</span></td><td class="num">4,784</td><td>入っていない</td></tr>
 <tr><td class="num">2</td><td><span class="addr">GBLY27C6YKMLKDYOY7UUXP5FKGTI4GTFPOSNBQOMOAZOYK5CSWYIAWAG</span></td><td class="num">109</td><td>入っていない</td></tr>
 <tr><td class="num">3</td><td><span class="addr">GBX2JNJQ665HIX3Q6CN3MQK5ZJ6UEEQW7YIX67SU2H3K6DHOXA3BD3SI</span></td><td class="num">42</td><td>入っている</td></tr>
@@ -247,42 +244,38 @@ img { max-width: 100%; }
 <tr><td class="num">5</td><td><span class="addr">GA4XXJN5ANBQXCGX2VFCT3WVDL45POR54NZ7KDUVF6G4PJQMXBRVJHOD</span></td><td class="num">25</td><td>入っていない</td></tr>
 <tr><td class="num">6</td><td><span class="addr">GBM6MMGT4YHXEARDRE35IP3OHRKA5AIAEUHCP34V54UZBLCLTXMW2SAK</span></td><td class="num">2</td><td>入っていない</td></tr>
 </table></div>
-<p>中心は <span class="addrf">GDXZUYU7KF5QATLXEBIRZJ4NWKNYP3OFRNQVL2AUSQ2EUDD2XJA54JTQ</span> である。この1アドレスは、4,756 件のアカウントへの「追加鍵」であり、第2部・第4部で流出の初回送金先の第1位（約2,060件）であり、そして今回、エンクローズド期間の確定リストのメンバーでもあることが分かった。鍵の役割と資金の受け皿の役割を、同じアドレスが担っている形である。この結びつきは No.1 のリスト（2023年の特定時期）には現れず、No.2 で初めて見えた。また、実例アカウントに追加された鍵 <span class="addrf">GBLY27C6YKMLKDYOY7UUXP5FKGTI4GTFPOSNBQOMOAZOYK5CSWYIAWAG</span>（109件）も確定リストに入っている。3つの集合（No.1リスト、No.2確定リスト、使い回し追加鍵）すべてに載るのは GBX2JNJQ…（42件）の1件だけだった。参考として、No.2確定リストの 544 件（27.5%）は No.1 のリストとも重なっている。</p>
+<p>このうち GBX2JNJQ… は、No.1・No.2・本調査の3か所すべてに現れる唯一の鍵である。</p>
+<h3>アカウントの照合</h3>
+<p>追跡対象の 110,650 アカウントのうち、23 件は No.2 の確定リストそのものにも含まれていた（No.1 のリストには 26 件が含まれる）。</p>
+<h3>合流点</h3>
+<p>鍵 <span class="addrf">GDXZUYU7KF5QATLXEBIRZJ4NWKNYP3OFRNQVL2AUSQ2EUDD2XJA54JTQ</span> は、4,784 件のアカウントに追加された鍵でありながら、追加後の初回送金の送り先としても2位（2,165 件）、解除後の初回送金の送り先としても2位（2,547 件）に現れ、さらに No.2 の確定リストにも含まれている。鍵を追加する側、送金を受け取る側、そして別の方法で確定したリストの3か所に、同じアドレスが現れる。</p>
 
-<h2>考察 — 「締め出して解除を待つ」モデルとの照合</h2>
-<p>本調査の出発点には、次の見立てがあった。攻撃者はパスフレーズを盗んだうえで鍵を追加し、しきい値を引き上げて本人を締め出す。本人（重み1）だけでは解除後の資金にも触れられないが、攻撃者は本人の鍵と追加鍵の合計2点で送金できる。狙いは追加時点の流動残高ではなく、ロックされた残高が解除される日である。</p>
-<ul>
-<li>この見立てと整合する点：締め出しはほぼ全件（97.1%）で成立していた。追加時点の残高はほぼ空だったのに、流出額は大きかった。流出は追加直後ではなく解除直後に集中し、過半数が3分未満だった。鍵の追加は1日に集中し、使い回しの鍵プールと共通の送金先インフラが見えた。</li>
-<li>単純には説明できない点：締め出されていないアカウントほど流出の割合が高かった（43%）。また、解除済みでも無事なアカウントが多数（63,198件）あり、追加＝即流出ではない。解除から7日以上経っての流出も 2,649 件ある。</li>
-<li>未解決の点：未解除の 37,585 件について、解除の時期に何が起きるかはこれからしか分からない。本調査はここまでの結果をまとめたもので、その後の追跡は未定である。</li>
-</ul>
+<h2>考察</h2>
+<p>モデレーターの間で共有された作業仮説は次のようなものである。攻撃者はパスフレーズを盗んだアカウントに自分の鍵を追加し、しきい値を引き上げて本人を締め出す。本人だけでは送金も鍵の削除もできない。一方、攻撃者は本人の鍵と追加した鍵を合わせれば操作できる。狙いは手元の残高ではなく、ロックされていて今は動かせない残高であり、それが解除される日を待つ。</p>
+<p>この仮説が正しければ、「締め出されたアカウントが、ロックの解除直後に送金する」という姿が観察されるはずである。本調査の結果はその予測と一致する。締め出し状態のまま解除後に送金したアカウントは 17,351 件あり、うち 10,426 件は解除から3分未満の送金だった。また、追加後の送金の大半が7日以上後だったことも、その場で抜くのではなく解除を待つという仮説の側に合う。もっとも、これは予測との一致であって、個別のアカウントについての証明ではない。</p>
+<p>追加の作業そのものについても、第1部の通り、鍵のプールの共有、活動の窓の一致、ペアでの同時追加といった、単一の組織的な作業をうかがわせる形跡がある。</p>
+<p>本レポートは残高の条件を使っていないため、解除後の送金が「ほぼ全額を抜く送金だったか、一部の送金だったか」は区別できない。その厳しい条件での検証は、第3部の No.2 リストとの照合が担う分担である。</p>
 
-<h2>限界と注意</h2>
-<ul>
-<li>本レポートは侵害の「兆候」の集計であり、盗難の断定でも、個人の特定でもない。チェーンの記録は資金の移動を示すだけで、操作した人物は示さない。</li>
-<li>第三者の鍵の追加には、Developer Portal でのアプリ作成に伴う正規のマルチシグ登録という説明が成り立つ場合がある。ただし、その平常時の実績は年あたり数件規模であり、2026-06-05 の 128,653 件という集中は別物である。</li>
-<li>残高の再現が信頼できたのは 110,650 件中 84,671 件（76.5%）であり、残高に依存する判定はその範囲に限られる。割合は全体とSubsetの両方を併記した。</li>
-<li>Phase 2c の設定は 2026-11-05 時点の姿（スナップショット）であり、その後に変更された可能性は含まない。</li>
-<li>全数調査の範囲は 2026-11-01T09:59:30Z まで。以後の追加・送金は含まない（Phase 2c の現在設定を除く）。</li>
-<li>取引所のラベルは第三者の調査報告・報道に基づく。流出額には通常の売却等が混ざる可能性がある。</li>
-</ul>
+<h2>限界</h2>
+<p>送金は、金額や送金後の残高を問わず数えている。「解除された後に送金があった」は「抜かれた」と同義ではない。</p>
+<p>締め出し状態でないアカウントの送金には、本人の操作が含まれうる。本レポートでは該当する数を分けて示した。</p>
+<p>「まだ解除されていない」の件数は、判定の基準時刻（2026-11-05T04:22:50Z）時点のもので、時間の経過とともに減っていく。</p>
+<p>ロック解除の時刻は、エフェクトの請求条件に記録された期間からの復元であり、プロジェクトNo.2と同じ方法・同じ限界を持つ。</p>
+<p>全件調査の範囲は 2026-11-01T09:59:30Z までである。追跡に使ったアカウント情報の取得は 2026-11-03〜05 で、それ以降の変化は含まない。</p>
+<p>取引所ウォレットなどのラベルは、第三者の報告や報道に基づくもので、各取引所の公式な公表ではない。</p>
 
 <h2>データファイル</h2>
-<p>集計のサマリーと、アカウント単位の明細CSVを置く。</p>
+<p>集計の材料となったデータを、同じサイトで公開する。</p>
+<ul>
+<li><a href="https://tysseo7-meru.github.io/pi-signer-created-report/census_summary.txt">全件調査の集計（census_summary.txt）</a></li>
+<li><a href="https://tysseo7-meru.github.io/pi-signer-created-report/tracking_summary.txt">追跡の集計（tracking_summary.txt）</a></li>
+<li><a href="https://tysseo7-meru.github.io/pi-signer-created-report/phase2c_summary.txt">締め出し（現在のしきい値）の集計（phase2c_summary.txt）</a></li>
+<li><a href="https://tysseo7-meru.github.io/pi-signer-created-report/enclosed_crosscheck.txt">プロジェクトNo.2との照合の詳細（enclosed_crosscheck.txt）</a></li>
+<li><a href="https://tysseo7-meru.github.io/pi-signer-created-report/tracking_accounts.csv">追跡のアカウント単位明細（tracking_accounts.csv、110,650件）</a></li>
+</ul>
 <div class="note">
-<p><strong>明細CSVについての注意</strong>：phase2b_indicators.csv と phase2d_accounts.csv は、鍵を追加された側、つまり<strong>被害者かもしれないアカウント</strong>についての「兆候」のデータである。明細に載っていることは侵害を受けたことの確定を意味せず、各アカウントの事情はチェーン外の情報を含めて個別に判断されるべきものである。これらのアカウントの持ち主を加害者として扱う用途には使わないでいただきたい。</p>
+<p>アカウント単位明細についての注意：この明細は、第三者による鍵の追加を受けたアカウント、つまり「被害者かもしれない側」の一覧であり、記録しているのは追加・締め出し・解除・送金の事実だけである。明細に載っていることは侵害の証明ではなく、アカウントごとに事情は異なる。このデータを、アカウントの持ち主を加害者として扱う用途に使ってはならない。</p>
 </div>
-<div class="tw"><table>
-<tr><th>ファイル</th><th>内容</th></tr>
-<tr><td><a href="https://tysseo7-meru.github.io/pi-signer-created-report/phase2b_indicators.csv" target="_blank" rel="noopener">phase2b_indicators.csv</a></td><td>Phase 2b のアカウント単位明細（110,650件：追加後の送金・残高・鍵の残存などの兆候一式）</td></tr>
-<tr><td><a href="https://tysseo7-meru.github.io/pi-signer-created-report/phase2d_accounts.csv" target="_blank" rel="noopener">phase2d_accounts.csv</a></td><td>Phase 2d のアカウント単位明細（110,650件：分類・解除時刻・初回流出までの間隔など）</td></tr>
-<tr><td><a href="https://tysseo7-meru.github.io/pi-signer-created-report/census_summary.txt" target="_blank" rel="noopener">census_summary.txt</a></td><td>全数調査の集計（時期分布・使い回し鍵の上位を含む）</td></tr>
-<tr><td><a href="https://tysseo7-meru.github.io/pi-signer-created-report/phase2b_summary.txt" target="_blank" rel="noopener">phase2b_summary.txt</a></td><td>Phase 2b の兆候集計</td></tr>
-<tr><td><a href="https://tysseo7-meru.github.io/pi-signer-created-report/phase2c_summary.txt" target="_blank" rel="noopener">phase2c_summary.txt</a></td><td>Phase 2c の設定スナップショット集計</td></tr>
-<tr><td><a href="https://tysseo7-meru.github.io/pi-signer-created-report/phase2d_summary.txt" target="_blank" rel="noopener">phase2d_summary.txt</a></td><td>Phase 2d の分類集計</td></tr>
-<tr><td><a href="https://tysseo7-meru.github.io/pi-signer-created-report/enclosed_crosscheck.txt" target="_blank" rel="noopener">enclosed_crosscheck.txt</a></td><td>No.2確定リストとの照合メモ</td></tr>
-</table></div>
-<p class="small">生成：モコ（Muse）／ Muse Spark 1.3</p>
 </main>
 </body>
 </html>

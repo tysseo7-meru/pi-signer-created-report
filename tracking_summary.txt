@@ -1,0 +1,27 @@
+Tracking summary - signer additions followed WITHOUT balance criteria (facts, not verdicts)
+accounts: 110650
+
+classification by lockup release and sends (reference: 2026-11-05T04:22:50Z):
+  released_sent       18930
+  released_no_send    53053
+  not_yet_released    37585
+  no_lockup_found      1082
+
+first send after release - gap from the release it followed:
+  <3min  10594
+  <1h    241
+  <1d    803
+  <7d    1493
+  >=7d   5799
+
+cross-tab class x locked_out (Phase 2c):
+  released_sent      locked=17351 not=1579
+  released_no_send   locked=52549 not=504
+  not_yet_released   locked=36461 not=1124
+  no_lockup_found    locked=1082 not=0
+locked accounts that sent after release: 17351 (gap <3min: 10426)
+
+Phase 2b facts (no balance use): send after addition in 21201 accounts; lockout-style
+threshold change inside the addition transaction in 42469 accounts.
+
+account-level overlap: with enclosed No.2 list (1,980): 23; with No.1 list (8,132): 26
