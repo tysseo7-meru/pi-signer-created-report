@@ -57,6 +57,16 @@ img { max-width: 100%; }
 <p>Japanese version: <a href="https://tysseo7-meru.github.io/pi-signer-created-report/signer_created_report.html">Japanese report</a>. Detailed figures and supplementary material are collected in the appendix at the end of this page.</p>
 </div>
 
+<h2>Summary</h2>
+<p>We examined every key-addition record on the Pi blockchain. Third-party additions affected 110,650 accounts, almost all of them concentrated on a single day, 5 June 2026, with none after that day through 25 November 2026. 97.1% of these accounts cannot be operated with the owner's key alone. The lockups released after the additions total 9.51 million Pi, against which 11.58 million Pi was then sent out.</p>
+<div class="tw"><table>
+<tr><th>Area</th><th>Result</th></tr>
+<tr><td>Full census</td><td>signer_created events totalled 18,444,110. Third-party additions numbered 128,871 events (110,650 accounts); 99.8% of them were concentrated on the single day 2026-06-05, and from that day through 2026-11-25 there were zero.</td></tr>
+<tr><td>Tracking: sends after the addition</td><td>Of the 110,650 accounts that received an addition, 21,201 (19.2%) sent after the addition. Most of those sends happened seven days or more after the addition.</td></tr>
+<tr><td>Tracking: lockout</td><td>107,443 accounts (97.1%) are still in a locked-out state. The added key remains in 110,622 accounts; it was removed in only 28.</td></tr>
+<tr><td>Tracking: release and sends</td><td>Lockups released after the additions total 9,512,407 Pi, and the Pi sent out after them reaches 11,580,858 Pi. Of the 18,930 accounts that sent after a release, 17,351 are locked out - sends from accounts that should not be able to send with the owner's key alone.</td></tr>
+</table></div>
+
 <h2>Overview</h2>
 <p>Around 5 June 2026, multiple users reported that an unknown key had been added to their accounts and that they could no longer operate them (the accounts had been turned into multisig accounts). This investigation checks, from the chain's records, how large this phenomenon is and whether similar additions have continued since.</p>
 <p>The study proceeds as follows. First, every "a key was added" event (signer_created) is collected from the network's entire record. Next, every account that received an addition that was not its own registration (a third-party addition) is tracked, and three things are aggregated: (1) whether any send happened after the addition, (2) whether the owner is in a locked-out state, and (3) how the release of locked balances lines up with the timing of sends.</p>
@@ -67,16 +77,6 @@ img { max-width: 100%; }
 <div class="note">
 <p>Note: a third-party key addition is not, by itself, proof of a compromise. For example, it has been confirmed that creating a mainnet app in the Pi Developer Portal once involved adding a designated key as a normal step. This report presents an aggregation of events (indicators); it does not determine whether any individual account was compromised.</p>
 </div>
-
-<h2>Summary</h2>
-<p>We examined every key-addition record on the Pi blockchain. Third-party additions affected 110,650 accounts, almost all of them concentrated on a single day, 5 June 2026, with none after that day through 25 November 2026. 97.1% of these accounts cannot be operated with the owner's key alone. The lockups released after the additions total 9.51 million Pi, against which 11.58 million Pi was then sent out.</p>
-<div class="tw"><table>
-<tr><th>Area</th><th>Result</th></tr>
-<tr><td>Full census</td><td>signer_created events totalled 18,444,110. Third-party additions numbered 128,871 events (110,650 accounts); 99.8% of them were concentrated on the single day 2026-06-05, and from that day through 2026-11-25 there were zero.</td></tr>
-<tr><td>Tracking: sends after the addition</td><td>Of the 110,650 accounts that received an addition, 21,201 (19.2%) sent after the addition. Most of those sends happened seven days or more after the addition.</td></tr>
-<tr><td>Tracking: lockout</td><td>107,443 accounts (97.1%) are still in a locked-out state. The added key remains in 110,622 accounts; it was removed in only 28.</td></tr>
-<tr><td>Tracking: release and sends</td><td>Lockups released after the additions total 9,512,407 Pi, and the Pi sent out after them reaches 11,580,858 Pi. Of the 18,930 accounts that sent after a release, 17,351 are locked out - sends from accounts that should not be able to send with the owner's key alone.</td></tr>
-</table></div>
 
 <h2>Part 1 - Full census of signer_created</h2>
 <p>All effects on Horizon (records of on-chain changes) were scanned from genesis to the end of the scope, and every event of type 10 (signer_created) was extracted.</p>
