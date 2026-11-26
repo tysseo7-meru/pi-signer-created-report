@@ -63,7 +63,7 @@ img { max-width: 100%; }
 <tr><th>Area</th><th>Result</th></tr>
 <tr><td>Full census</td><td>signer_created events totalled 18,444,110. Third-party additions numbered 128,871 events (110,650 accounts); 99.8% of them were concentrated on the single day 2026-06-05, and from that day through 2026-11-25 there were zero.</td></tr>
 <tr><td>Tracking: sends after the addition</td><td>Of the 110,650 accounts that received an addition, 21,201 (19.2%) sent after the addition. Most of those sends happened seven days or more after the addition.</td></tr>
-<tr><td>Tracking: lockout</td><td>107,443 accounts (97.1%) are still in a locked-out state. The added key remains in 110,622 accounts; it was removed in only 28.</td></tr>
+<tr><td>Tracking: lockout</td><td>107,443 accounts (97.1%) are still in a locked-out state. The added key remains in 110,622 accounts; it was removed in only 28, in every case swapped for a different key on 2026-06-05.</td></tr>
 <tr><td>Tracking: release and sends</td><td>Lockups released after the additions total 9,512,407 Pi, and the Pi sent out after them reaches 11,580,858 Pi. Of the 18,930 accounts that sent after a release, 17,351 are locked out - sends from accounts that should not be able to send with the owner's key alone.</td></tr>
 </table></div>
 
@@ -152,6 +152,7 @@ img { max-width: 100%; }
 <tr><td>Other</td><td class="num">495</td><td class="num">0.4%</td><td class="num">450</td></tr>
 </table></div>
 <p>The owner's key has weight 1 in 109,529 accounts, 0 (the owner's key can do nothing at all) in 1,117, and 2 or more in 4. The added key is still present in 110,622 accounts; it was later removed in only 28.</p>
+<p>The 28 removals were traced through their removal records (signer_removed): 43 removals in 40 transactions, all on 2026-06-05 between 15:23 and 19:46 UTC. In each case the form was a swap: a previously added key was removed and a different key left in place. The most common key remaining after a swap was GDCRWNNL55… (14 accounts), followed by GC7TEFFKCS… (weight 2, 5 accounts), and the GAMHW4DH… / GCQX4C2R… pair (3 accounts). Every removal transaction was submitted from the account itself and carried the owner's key signature; 16 also carried the added key's signature. 27 of the 28 accounts are still locked out, with an added key remaining. The single exception (GCSVGU4EZ5COWIABW7U2HCJW7WPEL7DXOUF6WWU3SSFE2G6FRQ7RMTWS) is now back to owner-only control, with no added key and thresholds at 0 — but its key was removed only after a post-release send of 168.25 Pi, so it is not a case of the owner recovering the account.</p>
 <p>A locked-out account cannot change its own settings through the owner's actions, so this picture barely changes over time.</p>
 <h3>(3) Lockup releases and the timing of sends</h3>
 <p>Each account's lockup release times were reconstructed from the periods recorded in the claimant conditions of its effects (type 51). The reference time for classification is 2026-11-05T04:22:50Z.</p>
